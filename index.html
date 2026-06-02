@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LeixAI</title>
+  <meta name="description" content="LeixAI — Orchestrate. Govern. Execute." />
+
+  <!-- Favicon / browser tab + home-screen wiring -->
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#0c1418" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root{
+      --bg:#0c1418; --bg2:#0f1c21;
+      --ink:#e9f2f0; --muted:#7f9a95;
+      --mint:#8fd0c2; --teal:#4fae9b;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      background:var(--bg);
+      color:var(--ink);
+      font-family:"Sora",sans-serif;
+      min-height:100svh;
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+      position:relative;
+    }
+    /* atmosphere: teal glow + faint dot grid */
+    body::before{
+      content:"";position:fixed;inset:0;z-index:0;
+      background:
+        radial-gradient(420px 420px at 50% 38%, rgba(79,174,155,.18), transparent 70%),
+        radial-gradient(900px 700px at 50% 120%, rgba(143,208,194,.07), transparent 70%);
+      pointer-events:none;
+    }
+    body::after{
+      content:"";position:fixed;inset:0;z-index:0;opacity:.5;pointer-events:none;
+      background-image:radial-gradient(rgba(143,208,194,.06) 1px, transparent 1px);
+      background-size:26px 26px;
+      mask-image:radial-gradient(circle at 50% 42%, #000 30%, transparent 75%);
+      -webkit-mask-image:radial-gradient(circle at 50% 42%, #000 30%, transparent 75%);
+    }
+    main{
+      position:relative;z-index:1;
+      text-align:center;
+      padding:32px;
+      display:flex;flex-direction:column;align-items:center;
+    }
+    .mark{
+      width:148px;height:148px;
+      filter:drop-shadow(0 14px 40px rgba(79,174,155,.30));
+      animation:rise .9s cubic-bezier(.2,.7,.2,1) both;
+    }
+    .wordmark{
+      font-weight:700;
+      font-size:clamp(3rem,11vw,5.25rem);
+      letter-spacing:-.02em;
+      line-height:1;
+      margin-top:26px;
+      background:linear-gradient(180deg,#f3faf8 0%,#bfe4da 100%);
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+      animation:rise .9s .08s cubic-bezier(.2,.7,.2,1) both;
+    }
+    .tagline{
+      margin-top:18px;
+      font-weight:300;
+      font-size:clamp(1rem,2.6vw,1.4rem);
+      color:var(--ink);
+      letter-spacing:.01em;
+      animation:rise .9s .16s cubic-bezier(.2,.7,.2,1) both;
+    }
+    .tagline b{font-weight:600;color:var(--mint)}
+    .label{
+      margin-top:30px;
+      font-family:"IBM Plex Mono",monospace;
+      font-size:.72rem;font-weight:500;
+      letter-spacing:.32em;text-transform:uppercase;
+      color:var(--muted);
+      display:flex;align-items:center;gap:12px;
+      animation:rise .9s .26s cubic-bezier(.2,.7,.2,1) both;
+    }
+    .label .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);
+      box-shadow:0 0 12px 2px rgba(79,174,155,.7);animation:pulse 2.4s ease-in-out infinite}
+    .foot{
+      position:fixed;bottom:26px;left:0;right:0;z-index:1;text-align:center;
+      font-family:"IBM Plex Mono",monospace;font-size:.72rem;letter-spacing:.18em;
+      color:var(--muted);text-transform:uppercase;
+      animation:rise .9s .36s cubic-bezier(.2,.7,.2,1) both;
+    }
+    .hair{position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:1;
+      width:min(560px,70vw);height:1px;
+      background:linear-gradient(90deg,transparent,rgba(143,208,194,.5),transparent)}
+    @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+    @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+  </style>
+</head>
+<body>
+  <span class="hair"></span>
+  <main>
+    <img class="mark" src="/icon-512.png" alt="LeixAI" width="148" height="148" />
+    <h1 class="wordmark">LeixAI</h1>
+    <p class="tagline"><b>Orchestrate.</b> <b>Govern.</b> <b>Execute.</b></p>
+    <div class="label"><span class="dot"></span>Enterprise&nbsp;MCP&nbsp;·&nbsp;Governed&nbsp;Execution</div>
+  </main>
+  <div class="foot">leixai.com</div>
+</body>
+</html>
