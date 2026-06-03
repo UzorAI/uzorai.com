@@ -1,0 +1,11 @@
+{
+  "name": "UzorAI",
+  "short_name": "Uzor",
+  "icons": [
+    { "src": "/app-icon/uzor-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/app-icon/uzor-1024.png", "sizes": "1024x1024", "type": "image/png" }
+  ],
+  "theme_color": "#0F172A",
+  "background_color": "#0F172A",
+  "display": "standalone"
+}
