@@ -1,0 +1,8 @@
+{
+  "schema": "htu.skills/v1",
+  "source": "https://github.com/UzorAI/uzorai.com",
+  "skills": [
+    { "name": "uzor-brand", "skill_type": "brand-manual", "path": "uzor-brand/SKILL.md", "version": "1" },
+    { "name": "uzor-constitution", "skill_type": "site-constitution", "path": "uzor-constitution/SKILL.md", "version": "0-draft" }
+  ]
+}
