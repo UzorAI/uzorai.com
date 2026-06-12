@@ -1,0 +1,127 @@
+name: implw — autonomous spec implementation
+# `dispatch_id` (optional) is the correlation token minted by the
+# `trigger_implw` MCP tool (FEAT zzv-skills#65). It rides through to the
+# run-name so the tool can match the dispatched run back to its caller.
+# Declaring the input is required: GitHub returns HTTP 422 on a
+# workflow_dispatch carrying an undeclared input (BUG htu-foundation#180).
+run-name: "implw #${{ inputs.issue_number }} by @${{ github.actor }} [${{ inputs.dispatch_id }}]"
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "GitHub issue number containing the scored spec body"
+        required: true
+        type: string
+      dispatch_id:
+        description: "Correlation token from trigger_implw (optional)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: implw-${{ github.repository }}-${{ inputs.issue_number }}
+  cancel-in-progress: false
+
+jobs:
+  implw:
+    runs-on: [self-hosted, contabo, zilin]
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.name  "ZiLin"
+          git config user.email "noreply@zzv.io"
+
+      - name: Fetch issue body
+        id: fetch_issue
+        env:
+          # Same-repo `gh issue view` — GITHUB_TOKEN is auto-issued per run and
+          # always valid. Scoping per REFACTOR htu-foundation#192 eliminates the
+          # stale-ZZV_DISPATCH_TOKEN silent-failure class for same-repo reads.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          SPEC_PATH="$(mktemp -t implw-spec-${{ inputs.issue_number }}-XXXX.md)"
+          gh issue view "${{ inputs.issue_number }}" \
+            --repo "${{ github.repository }}" \
+            --json body --jq .body > "$SPEC_PATH"
+          test -s "$SPEC_PATH"
+          echo "spec_path=$SPEC_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Run implw via claude (subscription mode)
+        id: claude_run
+        timeout-minutes: 22
+        # No GH_TOKEN env: claude inherits the self-hosted runner's persistent
+        # `gh auth` (operator PAT), which is what enables `gh pr create` to
+        # trigger downstream workflow_dispatch (GitHub anti-recursion bypasses
+        # the run-scoped GITHUB_TOKEN, not a user PAT). Scoping per REFACTOR
+        # htu-foundation#192 — handing claude a workflow-scoped GH_TOKEN was
+        # redundant with gh-CLI inheritance and exposed the stale-token failure
+        # class. See CHORE htu-foundation#175 for original PR-dispatch rationale.
+        run: |
+          set -euo pipefail
+          # Enforce subscription auth: Claude Code precedence is
+          # cloud-flags > ANTHROPIC_AUTH_TOKEN > ANTHROPIC_API_KEY > apiKeyHelper > subscription.
+          # Unset the two env-clearable layers (docs-prescribed; empty string is not
+          # documented as equivalent to unset). Cloud-provider flags cannot be
+          # neutralized, so fail loud if any are set. See BUG htu-foundation#185.
+          unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN
+          if [ -n "${CLAUDE_CODE_USE_BEDROCK:-}${CLAUDE_CODE_USE_VERTEX:-}${CLAUDE_CODE_USE_FOUNDRY:-}" ]; then
+            echo "::error::cloud-provider routing flag set — subscription mode bypassed"; exit 2
+          fi
+          if [ -n "${ANTHROPIC_API_KEY:-}${ANTHROPIC_AUTH_TOKEN:-}" ]; then
+            echo "::error::credential env still set after unset — subscription mode bypassed"; exit 2
+          fi
+          echo "claude auth mode: subscription (API key + auth token cleared)"
+          # The GitHub self-hosted runner caches its launch-time PATH in `.path`.
+          # After a `claude` install/update on the host, that cache stays stale until
+          # the runner unit restarts, producing exit 127. Prepending the npm-global
+          # bin here removes the restart-after-install dependency; the guard fails
+          # loud if `claude` is still unresolvable. See CHORE htu-foundation#186.
+          export PATH="$HOME/.npm-global/bin:$PATH"
+          command -v claude >/dev/null || { echo "::error::claude not found on PATH"; exit 127; }
+          # --dangerously-skip-permissions is required in CI: headless `claude -p`
+          # does not honor repo-committed `defaultMode: bypassPermissions` (a repo
+          # cannot self-grant bypass), so without the flag the agent falls back to
+          # ask-mode, blocks on the first gated tool, and times out against
+          # `< /dev/null`. See BUG htu-foundation#189; verified remedy in
+          # streettt.com#970.
+          set +e
+          timeout 20m claude --dangerously-skip-permissions -p "/implw ${{ steps.fetch_issue.outputs.spec_path }}" < /dev/null
+          CLAUDE_EXIT=$?
+          set -e
+          echo "claude_exit=$CLAUDE_EXIT" >> "$GITHUB_OUTPUT"
+          exit "$CLAUDE_EXIT"
+
+      - name: Cleanup spec tmp file
+        if: always()
+        run: rm -f "${{ steps.fetch_issue.outputs.spec_path }}"
+
+      - name: Comment failure on issue
+        if: failure()
+        env:
+          # Same-repo `gh issue comment` — GITHUB_TOKEN is auto-issued and
+          # always valid. Scoping per REFACTOR htu-foundation#192 keeps the
+          # failure-reporting path from itself failing on a stale PAT.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CLAUDE_EXIT: ${{ steps.claude_run.outputs.claude_exit }}
+        run: |
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          if [ "${CLAUDE_EXIT:-}" = "124" ]; then
+            BODY="implw hit timeout (exit 124) — investigate runner state and claude CLI auth. Logs: $RUN_URL"
+          else
+            BODY="implw run failed (exit ${CLAUDE_EXIT:-unknown}) — see logs: $RUN_URL"
+          fi
+          gh issue comment "${{ inputs.issue_number }}" \
+            --repo "${{ github.repository }}" \
+            --body "$BODY"
