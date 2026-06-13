@@ -1,0 +1,7 @@
+# Scaffold build artifacts (REFACTOR #15 Phase 1).
+# Kept out of git so the production deploy (git archive HEAD -> Pages static
+# upload, see .github/workflows/deploy.yml) never ships node_modules or dist.
+node_modules/
+dist/
+.wrangler/
+*.log

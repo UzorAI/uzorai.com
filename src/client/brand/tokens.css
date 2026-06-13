@@ -1,0 +1,72 @@
+/*
+ * Uzor design tokens — sourced from branding/README.md (role-bound colorway).
+ * Graphite background; Aqua (mint) + Teal accents on dark. Do not improvise:
+ * the brand manual is the single source of truth (htu-brand-conformance).
+ */
+:root {
+  --graphite: #0F172A;
+  --slate: #1E293B;
+  --slate-700: #334155;
+  --slate-400: #94A3B8;
+  --soft-white: #F8FAFC;
+  --teal: #0B6E78;
+  --aqua: #A7E3E5;
+
+  --bg: var(--graphite);
+  --surface: var(--slate);
+  --fg: var(--soft-white);
+  --muted: var(--slate-400);
+  --accent: var(--aqua); /* accent on dark surfaces */
+
+  --maxw: 1180px;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.wrap {
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app > main {
+  flex: 1 0 auto;
+  padding: 64px 0;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
