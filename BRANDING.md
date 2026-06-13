@@ -1,27 +1,33 @@
-# LeixAI brand assets
+# UzorAI brand assets
 
-Favicon / icon set derived from the LeixAI mark (mint→teal gradient hexagonal cube).
-Transparent background, square, optimized per size.
+Favicon / icon set derived from the UzorAI cube mark — the hexagonal "узор" cube,
+rendered mint (Aqua `#A7E3E5`) on a graphite `#0F172A` tile for the app icon, and
+on a transparent background for the browser favicons. The cube is the single
+canonical mark; there is no separate or legacy symbol. Master vector:
+`branding/uzor-logo.svg` (regenerate the raster kit via `branding/generate-assets.py`).
 
 | File | Size | Use |
 |---|---|---|
-| `favicon.ico` | 16/32/48 multi-res | Legacy browser tab |
-| `favicon-16x16.png` / `favicon-32x32.png` / `favicon-48x48.png` | 16/32/48 | Modern browser tab |
-| `apple-touch-icon.png` | 180 | iOS home screen |
-| `icon-192.png` | 192 | PWA / Android |
-| `icon-512.png` | 512 | PWA maskable · **MCP connector listing logo** |
-| `site.webmanifest` | — | Installable metadata |
+| `public/favicon/uzor.ico` | 16/32/48 multi-res | Legacy browser tab |
+| `public/favicon/uzor-favicon.svg` | vector | Modern browser tab |
+| `public/favicon/uzor-16.png` / `uzor-32.png` / `uzor-48.png` / `uzor-128.png` | 16/32/48/128 | Modern browser tab / bookmarks |
+| `public/app-icon/uzor-180.png` | 180 | iOS home screen (apple-touch-icon) |
+| `public/app-icon/uzor-512.png` | 512 | PWA · **MCP connector listing logo** |
+| `public/app-icon/uzor-1024.png` | 1024 | PWA maskable / high-res tile |
+| `public/site.webmanifest` | — | Installable metadata |
 
 ## Browser tab
-Wired in `index.html` `<head>` via `<link rel="icon">`, `apple-touch-icon`, and `manifest`.
-Serving these at the web root makes `leixai.com` show the mark in the tab.
+Wired in the page `<head>` via `<link rel="icon">`, `apple-touch-icon`, and
+`manifest` — see `branding/head-snippet.html`. Serving these at the web root makes
+`uzorai.com` show the cube mark in the tab.
 
 ## MCP server listing
-The ChatGPT Apps / Claude Connectors directory listing logo is `icon-512.png`.
-Upload it as the connector logo at submission time (EPIC #206 Phases 3–4).
-To also show the mark when an MCP client probes the endpoint, serve `/favicon.ico`
-from the `skills.leixai.com` worker (follow-up on the zzv-skills side).
+The ChatGPT Apps / Claude Connectors directory listing logo is the mint-on-graphite
+tile `public/app-icon/uzor-512.png`. Upload it as the connector logo at submission
+time. To also show the mark when an MCP client probes the endpoint, serve
+`/favicon.ico` from the `skills.uzorai.com` worker.
 
 ## Regenerating
-These were generated from the favicon spec sheet. For pixel-true 512px output,
-regenerate from the master `leixai-logo.png` (vector preferred) and re-export the set.
+The raster kit is generated from the cube master. For pixel-true output,
+regenerate from `branding/uzor-logo.svg` via `branding/generate-assets.py` and
+re-export the set — do not redraw the mark.
