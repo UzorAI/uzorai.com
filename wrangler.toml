@@ -1,0 +1,13 @@
+# UzorAI Worker — Phase 1 scaffold (REFACTOR #15).
+# No custom-domain routes this phase: workers.dev only / unbound. Domain cutover
+# is Phase 4. The production site continues to deploy via .github/workflows/deploy.yml
+# (Cloudflare Pages static upload); this Worker is NOT wired into that path yet.
+name = "uzorai"
+main = "src/server/index.ts"
+compatibility_date = "2025-01-01"
+
+# Hono serves the built client; SPA fallback is handled by the assets binding.
+[assets]
+directory = "./dist/client"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
