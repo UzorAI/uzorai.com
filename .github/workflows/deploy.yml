@@ -1,4 +1,4 @@
-name: Deploy uzorai.com to Cloudflare Pages
+name: Deploy uzorai.com Worker to Cloudflare
 on:
   push:
     branches: [main]
@@ -6,18 +6,19 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: pages-deploy-uzorai
+  group: worker-deploy-uzorai
   cancel-in-progress: true
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Stage clean site (no .git)
-        run: mkdir -p _site && git archive HEAD | tar -x -C _site
-      - name: Deploy to Cloudflare Pages (production)
-        uses: cloudflare/wrangler-action@v3
+      - uses: actions/setup-node@v4
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy _site --project-name=uzorai --branch=main --commit-dirty=true
+          node-version: 20
+      - run: npm ci
+      - name: Build and deploy Worker (production)
+        run: npm run deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
