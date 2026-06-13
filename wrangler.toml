@@ -1,10 +1,20 @@
-# UzorAI Worker — Phase 1 scaffold (REFACTOR #15).
-# No custom-domain routes this phase: workers.dev only / unbound. Domain cutover
-# is Phase 4. The production site continues to deploy via .github/workflows/deploy.yml
-# (Cloudflare Pages static upload); this Worker is NOT wired into that path yet.
+# UzorAI Worker — REFACTOR #15.
+# Phase 4 (production cutover) adds the custom-domain routes below. They are
+# INERT until an operator deploys the Worker and binds the domains Cloudflare-side
+# (a control-plane step) — merging this config alone changes nothing in production.
+# Until that cutover, the production site still deploys via .github/workflows/deploy.yml
+# (Cloudflare Pages static upload); this Worker is NOT yet wired into that path.
 name = "uzorai"
 main = "src/server/index.ts"
 compatibility_date = "2025-01-01"
+
+# Custom-domain routes (Phase 4). Inert until the Worker is deployed and the
+# domains are bound to it Cloudflare-side; see issue #23 / REFACTOR #15.
+routes = [
+  { pattern = "uzorai.com", custom_domain = true },
+  { pattern = "uzor.ai", custom_domain = true },
+  { pattern = "www.uzorai.com", custom_domain = true },
+]
 
 # Hono serves the built client; SPA fallback is handled by the assets binding.
 [assets]
