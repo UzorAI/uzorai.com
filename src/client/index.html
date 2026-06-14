@@ -4,6 +4,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="google" content="notranslate" />
+    <!--
+      Pre-paint theme: set <html data-theme> before first paint so there is no
+      flash-of-wrong-theme. Self-contained (no imports) and defensive; mirrors
+      src/client/theme/initTheme.ts, which the ThemeProvider reconciles on
+      mount. Falls back to 'dark' (the brand default :root colorway).
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('uzor-theme')
+          var theme =
+            stored === 'light' || stored === 'dark'
+              ? stored
+              : window.matchMedia &&
+                  window.matchMedia('(prefers-color-scheme: light)').matches
+                ? 'light'
+                : 'dark'
+          document.documentElement.setAttribute('data-theme', theme)
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark')
+        }
+      })()
+    </script>
     <title>UzorAI — Orchestrate. Govern. Execute.</title>
     <!-- Uzor favicon + app-icon wiring (mirrors branding/head-snippet.html) -->
     <link rel="icon" type="image/svg+xml" href="/favicon/uzor-favicon.svg" />

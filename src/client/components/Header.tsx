@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import markUrl from '../brand/uzor-mark.svg'
+import ThemeToggle from './ThemeToggle'
 
 // The cube master (branding/uzor-logo.svg, copied verbatim to brand/uzor-mark.svg)
 // is the only brand mark in the scaffold; no superseded inline symbol is used.
@@ -32,16 +33,22 @@ export default function Header() {
             UzorAI
           </span>
         </Link>
-        <span
-          className="mono"
+        <div
           style={{
             marginLeft: 'auto',
-            color: 'var(--accent)',
-            fontSize: 13,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 16,
           }}
         >
-          Orchestrate. Govern. Execute.
-        </span>
+          <span
+            className="mono"
+            style={{ color: 'var(--accent)', fontSize: 13 }}
+          >
+            Orchestrate. Govern. Execute.
+          </span>
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   )

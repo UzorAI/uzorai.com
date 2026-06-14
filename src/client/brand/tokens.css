@@ -23,6 +23,46 @@
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 }
 
+/*
+ * Theme layer (EPIC #29 Phase A). The bare :root above is the brand DARK
+ * (graphite) colorway and is the default — it renders even before the inline
+ * pre-paint script sets data-theme, which is why 'dark' is the no-flash
+ * fallback. data-theme is set on <html> before first paint; toggling it
+ * re-resolves every semantic token below. The light block redefines only the
+ * role-bound tokens the UI consumes (--bg/--surface/--fg/--muted/--accent and
+ * the --slate-* roles used for borders + secondary text); the raw palette and
+ * non-colour tokens are inherited from :root, so the brand light values stay
+ * derived from the same manual.
+ *
+ * NOTE (spec divergence, FEAT #30): the scored spec framed today's site as
+ * "light-only" and described an additive :root[data-theme="dark"] block. The
+ * repo's actual default colorway is the dark graphite set, so the additive
+ * block is keyed [data-theme="light"] to keep the current look unchanged as
+ * the dark default. Same data-theme contract, premise inverted to match
+ * reality — recorded in the implw run digest.
+ */
+:root[data-theme='dark'] {
+  /* Explicit alias of the brand default so an explicit data-theme="dark"
+     resolves identically to the bare :root. */
+  --bg: var(--graphite);
+  --surface: var(--slate);
+  --fg: var(--soft-white);
+  --muted: var(--slate-400);
+  --accent: var(--aqua);
+}
+
+:root[data-theme='light'] {
+  --bg: var(--soft-white); /* #F8FAFC */
+  --surface: #ffffff;
+  --fg: var(--graphite); /* #0F172A */
+  --muted: var(--slate-700); /* darker body text for contrast on light */
+  --accent: var(--teal); /* teal reads as the on-light accent (vs aqua on dark) */
+
+  /* Role overrides for tokens the components consume directly. */
+  --slate-700: #cbd5e1; /* borders → light hairline */
+  --slate-400: #475569; /* nav inactive text → readable on light */
+}
+
 *,
 *::before,
 *::after {
