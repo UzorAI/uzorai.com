@@ -1,16 +1,19 @@
 import { NavLink } from 'react-router-dom'
+import { useLocale } from '../i18n/LocaleProvider'
 
 // Single source of truth for the six routes; App.tsx wires the same paths.
+// `labelKey` resolves through the active dictionary (fallback en).
 export const NAV_ITEMS = [
-  { to: '/', label: 'Home' },
-  { to: '/platform', label: 'Platform' },
-  { to: '/governance', label: 'Governance' },
-  { to: '/docs', label: 'Docs' },
-  { to: '/pricing', label: 'Pricing' },
-  { to: '/contact', label: 'Contact' },
+  { to: '/', labelKey: 'nav.home' },
+  { to: '/platform', labelKey: 'nav.platform' },
+  { to: '/governance', labelKey: 'nav.governance' },
+  { to: '/docs', labelKey: 'nav.docs' },
+  { to: '/pricing', labelKey: 'nav.pricing' },
+  { to: '/contact', labelKey: 'nav.contact' },
 ] as const
 
 export default function Nav() {
+  const { t } = useLocale()
   return (
     <nav
       style={{
@@ -37,7 +40,7 @@ export default function Nav() {
                 : '2px solid transparent',
             })}
           >
-            {item.label}
+            {t(item.labelKey)}
           </NavLink>
         ))}
       </div>

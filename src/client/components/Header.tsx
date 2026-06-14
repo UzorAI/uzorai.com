@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom'
 import markUrl from '../brand/uzor-mark.svg'
+import LanguagePicker from './LanguagePicker'
+import { useLocale } from '../i18n/LocaleProvider'
 
 // The cube master (branding/uzor-logo.svg, copied verbatim to brand/uzor-mark.svg)
 // is the only brand mark in the scaffold; no superseded inline symbol is used.
 export default function Header() {
+  const { t } = useLocale()
   return (
     <header
       style={{
@@ -32,16 +35,22 @@ export default function Header() {
             UzorAI
           </span>
         </Link>
-        <span
-          className="mono"
+        <div
           style={{
             marginLeft: 'auto',
-            color: 'var(--accent)',
-            fontSize: 13,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 18,
           }}
         >
-          Orchestrate. Govern. Execute.
-        </span>
+          <span
+            className="mono"
+            style={{ color: 'var(--accent)', fontSize: 13 }}
+          >
+            {t('header.tagline')}
+          </span>
+          <LanguagePicker />
+        </div>
       </div>
     </header>
   )

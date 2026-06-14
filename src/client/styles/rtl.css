@@ -1,0 +1,26 @@
+/*
+ * RTL flips — applied only when the LocaleProvider sets dir="rtl" on <html>
+ * (e.g. a future Arabic locale; ar is gated on an RTL review, EPIC #29).
+ * Safe to load globally: every rule is scoped under [dir="rtl"], so it is
+ * inert for the LTR locales shipped in v1 (en/es/ru/zh).
+ *
+ * Logical properties (margin-inline, padding-inline, inset-inline) already
+ * mirror automatically under dir="rtl"; these rules cover the few physical
+ * affordances in the scaffold that do not.
+ */
+
+/* Direction + base alignment for the whole document. */
+[dir='rtl'] body {
+  text-align: right;
+}
+
+/* Header tagline pins to the inline-start edge instead of the right margin. */
+[dir='rtl'] header .mono[style*='margin-left'] {
+  margin-left: 0 !important;
+  margin-right: auto !important;
+}
+
+/* Native form controls (the language picker) align text to the start edge. */
+[dir='rtl'] select {
+  text-align: right;
+}
