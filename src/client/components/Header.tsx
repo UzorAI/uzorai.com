@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import markUrl from '../brand/uzor-mark.svg'
 import LanguagePicker from './LanguagePicker'
+import ThemeToggle from './ThemeToggle'
 import { useLocale } from '../i18n/LocaleProvider'
 
 // The cube master (branding/uzor-logo.svg, copied verbatim to brand/uzor-mark.svg)
@@ -50,6 +51,7 @@ export default function Header() {
             {t('header.tagline')}
           </span>
           <LanguagePicker />
+          <ThemeToggle />
         </div>
       </div>
     </header>

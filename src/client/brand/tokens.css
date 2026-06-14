@@ -23,6 +23,35 @@
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 }
 
+/*
+ * Theme layer (EPIC #29 Phase A — htu.io parity).
+ * The graphite colorway above is uzorai's DARK theme and the brand default;
+ * `:root[data-theme="dark"]` re-asserts it so an explicit choice and the
+ * no-attribute first paint render identically. The light theme is purely
+ * additive: it remaps the same semantic tokens (and the palette tokens the
+ * components consume directly — --slate-400 for muted text, --slate-700 for
+ * borders) to a soft-white surface, leaving the dark theme untouched.
+ * `data-theme` is set before first paint by the inline script in index.html.
+ */
+:root,
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --bg: var(--soft-white); /* #F8FAFC */
+  --surface: #ffffff;
+  --fg: var(--graphite); /* #0F172A */
+  --muted: #475569; /* slate-600 — readable on light */
+  --accent: var(--teal); /* aqua is too pale on white; teal carries contrast */
+
+  /* Palette tokens consumed directly by components, re-tinted for light. */
+  --slate-400: #64748b; /* nav inactive text */
+  --slate-700: #cbd5e1; /* borders / dividers */
+}
+
 *,
 *::before,
 *::after {
