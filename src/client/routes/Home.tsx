@@ -1,29 +1,16 @@
 import { Link } from 'react-router-dom'
 import markUrl from '../brand/uzor-mark.svg'
+import { useLocale } from '../i18n/LocaleProvider'
 
 // Home ports the live uzorai.com hero verbatim (headline, subhead, the узор
 // gloss, and the "one control plane, three jobs" section) into the scaffold.
 // The cube master is the only brand mark here; the legacy graphical artifact on
 // the live static page is NOT carried over (it stays there until the cutover).
-const PILLARS = [
-  {
-    k: '01 · Orchestrate',
-    h: 'Coordinate every agent',
-    p: 'Route work across agents, tools, and MCP servers from one place — the lattice that holds the parts together.',
-  },
-  {
-    k: '02 · Govern',
-    h: 'Policy at the core',
-    p: 'Identity, permissions, and approval gates enforced before execution. Zero-Trust, audit-ready, host-correct.',
-  },
-  {
-    k: '03 · Execute',
-    h: 'Flow in, results out',
-    p: 'Deterministic, verifiable execution with a cryptographic audit trail — every action provable after the fact.',
-  },
-] as const
+// Copy resolves through t() against the active dictionary (fallback en).
+const PILLAR_KEYS = ['orchestrate', 'govern', 'execute'] as const
 
 export default function Home() {
+  const { t } = useLocale()
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 64 }}>
       {/* Hero */}
@@ -45,7 +32,7 @@ export default function Home() {
               color: 'var(--accent)',
             }}
           >
-            Agent orchestration · Governance · MCP
+            {t('home.eyebrow')}
           </p>
           <h1
             style={{
@@ -68,8 +55,7 @@ export default function Home() {
               lineHeight: 1.6,
             }}
           >
-            Governed AI orchestration for enterprise agents, tools, and workflows
-            — one woven control plane, auditable end to end.
+            {t('home.hero.subhead')}
           </p>
           <div
             style={{ display: 'flex', gap: 14, marginTop: 34, flexWrap: 'wrap' }}
@@ -85,7 +71,7 @@ export default function Home() {
                 fontWeight: 600,
               }}
             >
-              Request demo
+              {t('home.cta.demo')}
             </Link>
             <Link
               to="/docs"
@@ -98,7 +84,7 @@ export default function Home() {
                 color: 'var(--fg)',
               }}
             >
-              Read the docs
+              {t('home.cta.docs')}
             </Link>
           </div>
         </div>
@@ -152,8 +138,7 @@ export default function Home() {
           UZOR · узор
         </span>
         <span style={{ fontSize: 14.5, color: 'var(--muted)' }}>
-          a woven pattern — many independent parts coordinated into one coherent
-          structure. The mark is the pattern; the platform is the weave.
+          {t('home.meaning.text')}
         </span>
       </section>
 
@@ -170,7 +155,7 @@ export default function Home() {
             marginBottom: 34,
           }}
         >
-          One control plane, three jobs
+          {t('home.pillars.heading')}
         </h2>
         <div
           style={{
@@ -179,9 +164,9 @@ export default function Home() {
             gap: 20,
           }}
         >
-          {PILLARS.map((pill) => (
+          {PILLAR_KEYS.map((key) => (
             <div
-              key={pill.k}
+              key={key}
               style={{
                 background:
                   'linear-gradient(180deg, rgba(30,41,59,0.55), rgba(30,41,59,0.2))',
@@ -194,13 +179,13 @@ export default function Home() {
                 className="mono"
                 style={{ fontSize: 12, color: 'var(--accent)', letterSpacing: '0.08em' }}
               >
-                {pill.k}
+                {t(`home.pillar.${key}.k`)}
               </div>
               <h3 style={{ fontSize: 21, fontWeight: 700, margin: '12px 0 8px' }}>
-                {pill.h}
+                {t(`home.pillar.${key}.h`)}
               </h3>
               <p style={{ fontSize: 14.5, color: 'var(--muted)', lineHeight: 1.65 }}>
-                {pill.p}
+                {t(`home.pillar.${key}.p`)}
               </p>
             </div>
           ))}
@@ -232,7 +217,7 @@ export default function Home() {
                 textTransform: 'uppercase',
               }}
             >
-              Enterprise MCP endpoint
+              {t('home.mcp.eyebrow')}
             </div>
             <h3
               style={{
@@ -242,7 +227,7 @@ export default function Home() {
                 marginTop: 8,
               }}
             >
-              Reachable where your buyers actually are
+              {t('home.mcp.heading')}
             </h3>
             <p
               style={{
@@ -252,8 +237,7 @@ export default function Home() {
                 maxWidth: '52ch',
               }}
             >
-              A governed, OAuth-secured MCP server on a clean enterprise domain —
-              no blocked TLDs, no internal brand leakage.
+              {t('home.mcp.body')}
             </p>
           </div>
           <span
