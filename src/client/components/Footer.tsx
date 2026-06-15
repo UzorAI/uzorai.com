@@ -1,5 +1,5 @@
-// Footer carries the узор line as text (Russian "узор" — pattern/ornament,
-// the root of the Uzor brand name).
+// Footer carries the UZOR tagline — a one-line essence of the product that
+// echoes the "Orchestrate. Govern. Execute." copyright.
 export default function Footer() {
   return (
     <footer
@@ -21,7 +21,7 @@ export default function Footer() {
         }}
       >
         <span className="mono">
-          узор — the pattern beneath orchestration, governance, and execution.
+          UZOR — the pattern beneath orchestration, governance, and execution.
         </span>
         <span>© UzorAI. Orchestrate. Govern. Execute.</span>
       </div>
