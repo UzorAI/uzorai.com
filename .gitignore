@@ -5,3 +5,6 @@ node_modules/
 dist/
 .wrangler/
 *.log
+
+# Windows / WSL "mark of the web" metadata — rides along on /mnt/c copies; never track.
+*:Zone.Identifier

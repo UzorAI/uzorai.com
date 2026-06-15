@@ -1,6 +1,6 @@
 # UzorAI brand assets
 
-Favicon / icon set derived from the UzorAI cube mark — the hexagonal "узор" cube,
+Favicon / icon set derived from the UzorAI cube mark — the hexagonal cube,
 rendered mint (Aqua `#A7E3E5`) on a graphite `#0F172A` tile for the app icon, and
 on a transparent background for the browser favicons. The cube is the single
 canonical mark; there is no separate or legacy symbol. Master vector:
