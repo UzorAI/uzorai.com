@@ -31,3 +31,20 @@ time. To also show the mark when an MCP client probes the endpoint, serve
 The raster kit is generated from the cube master. For pixel-true output,
 regenerate from `branding/uzor-logo.svg` via `branding/generate-assets.py` and
 re-export the set — do not redraw the mark.
+
+## Reserved — Gold (merchandise & advertising)
+
+> **Status: reserved / not in product use.** The canonical product identity is the mint-on-graphite cube (Aqua `#A7E3E5` on `#0F172A`) defined above — that does not change. Gold is a **reserved treatment of the same cube**, for **off-product** surfaces only.
+
+**MAY be used (once activated):** merchandise (apparel, stickers, coins / plaques), advertising & launch creative, premium hero key art on dark backgrounds.
+
+**MUST NOT be used:** product UI, favicons, app icons, nav, web body, or the MCP connector listing. Gold is gradient/specular-dependent (it flattens to mustard in a single ink) and fails contrast on white — it is a poster finish, not a system color. Teal-on-graphite remains the system mark wherever the product renders.
+
+**Reserved assets** (stored, not wired into the site build):
+
+| File | Use |
+|---|---|
+| `branding/reserved/gold/uzor-gold-logo.png` | merch / ad / launch hero key art (gold cube render, light + dark) |
+| `branding/reserved/gold/gold-stripe.png` | merch / ad banner backdrop (gold foil texture band) |
+
+**Reserved — "Gold Token":** a name / concept held for a future, separately-announced initiative. **Parked and unannounced** — not for public use, listing, or advertising until a dedicated launch. This records intent only and carries **no product, financial, or promotional commitment**; scope and details are deferred to that launch.
