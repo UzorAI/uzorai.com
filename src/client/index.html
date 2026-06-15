@@ -14,6 +14,32 @@
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#0F172A" />
     <!--
+      Pre-paint canonical-host guard: uzorai.com denies client-side
+      translation (translate="no" + meta notranslate, above), but Google's
+      server-side translation proxy can still fetch the origin and re-serve
+      the page under *.translate.goog. The site ships first-party i18n, so we
+      send proxied visitors back to the canonical origin to use the in-app
+      language picker. Fires ONLY when location.hostname ends with
+      `.translate.goog`, so the canonical host, localhost, and *.workers.dev
+      previews never match — no redirect loop, no dev/preview breakage.
+      location.replace avoids history pollution; path/query/hash preserved.
+      Runs before the SPA bundle so no proxied content flashes.
+    -->
+    <script>
+      (function () {
+        try {
+          if (/\.translate\.goog$/.test(location.hostname)) {
+            location.replace(
+              'https://uzorai.com' +
+                location.pathname +
+                location.search +
+                location.hash
+            );
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <!--
       Pre-paint theme (EPIC #29 Phase A): set <html data-theme> synchronously
       during head parse so tokens.css resolves before first paint — no
       flash-of-wrong-theme. Mirrors the minimal read+apply path of
