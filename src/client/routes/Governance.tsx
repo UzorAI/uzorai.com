@@ -1,35 +1,25 @@
 import markUrl from '../brand/uzor-mark.svg'
+import { useLocale } from '../i18n/LocaleProvider'
 
 // On-brand Governance content — the "Govern" pillar elaborated. No standalone
-// live source, so this stays on brand rather than a bare stub.
-const CONTROLS = [
-  {
-    h: 'Identity & permissions',
-    p: 'Every agent and tool acts under an explicit identity. Permissions are scoped, not assumed.',
-  },
-  {
-    h: 'Approval gates',
-    p: 'Policy is enforced before execution — high-impact actions pause for the gate, not after the fact.',
-  },
-  {
-    h: 'Zero-Trust, audit-ready',
-    p: 'Host-correct by construction, with a cryptographic trail that makes every decision provable.',
-  },
-]
+// live source, so this stays on brand rather than a bare stub. Copy resolves
+// through t() against the active dictionary (fallback en).
+const CONTROL_KEYS = ['1', '2', '3'] as const
 
 export default function Governance() {
+  const { t } = useLocale()
   return (
     <section style={{ maxWidth: 960, margin: '0 auto' }}>
       <div style={{ textAlign: 'center', maxWidth: 720, margin: '0 auto' }}>
         <img src={markUrl} alt="UzorAI cube mark" width={72} height={72} />
-        <h1 style={{ fontSize: 40, fontWeight: 800, marginTop: 24 }}>Governance</h1>
+        <h1 style={{ fontSize: 40, fontWeight: 800, marginTop: 24 }}>
+          {t('governance.title')}
+        </h1>
         <p className="mono" style={{ color: 'var(--accent)', marginTop: 8 }}>
-          Policy at the core
+          {t('governance.tagline')}
         </p>
         <p style={{ color: 'var(--muted)', marginTop: 16, lineHeight: 1.6 }}>
-          Identity, permissions, and approval gates are enforced before
-          execution — Zero-Trust, audit-ready, and host-correct, so orchestration
-          stays accountable end to end.
+          {t('governance.body')}
         </p>
       </div>
       <div
@@ -40,9 +30,9 @@ export default function Governance() {
           marginTop: 48,
         }}
       >
-        {CONTROLS.map((c) => (
+        {CONTROL_KEYS.map((k) => (
           <div
-            key={c.h}
+            key={k}
             style={{
               background:
                 'linear-gradient(180deg, rgba(30,41,59,0.55), rgba(30,41,59,0.2))',
@@ -52,10 +42,10 @@ export default function Governance() {
             }}
           >
             <h3 style={{ fontSize: 19, fontWeight: 700, marginBottom: 8 }}>
-              {c.h}
+              {t(`governance.ctrl.${k}.h`)}
             </h3>
             <p style={{ fontSize: 14.5, color: 'var(--muted)', lineHeight: 1.65 }}>
-              {c.p}
+              {t(`governance.ctrl.${k}.p`)}
             </p>
           </div>
         ))}

@@ -43,9 +43,12 @@ export default function Home() {
               margin: '20px 0 18px',
             }}
           >
-            Orchestrate.
+            {t('home.hero.headline.1')}
             <br />
-            <span style={{ color: 'var(--accent)' }}>Govern.</span> Execute.
+            <span style={{ color: 'var(--accent)' }}>
+              {t('home.hero.headline.2')}
+            </span>{' '}
+            {t('home.hero.headline.3')}
           </h1>
           <p
             style={{

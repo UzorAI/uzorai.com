@@ -1,6 +1,11 @@
+import { useLocale } from '../i18n/LocaleProvider'
+
 // Footer carries the UZOR tagline — a one-line essence of the product that
-// echoes the "Orchestrate. Govern. Execute." copyright.
+// echoes the "Orchestrate. Govern. Execute." copyright. Both resolve through
+// t(): the tagline via footer.tagline, the copyright verbs reuse header.tagline.
+// "© UzorAI." and the UZOR wordmark stay literal (brand marks).
 export default function Footer() {
+  const { t } = useLocale()
   return (
     <footer
       style={{
@@ -20,10 +25,8 @@ export default function Footer() {
           fontSize: 13,
         }}
       >
-        <span className="mono">
-          UZOR — the pattern beneath orchestration, governance, and execution.
-        </span>
-        <span>© UzorAI. Orchestrate. Govern. Execute.</span>
+        <span className="mono">{t('footer.tagline')}</span>
+        <span>© UzorAI. {t('header.tagline')}</span>
       </div>
     </footer>
   )
