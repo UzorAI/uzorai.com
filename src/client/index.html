@@ -13,6 +13,33 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/app-icon/uzor-180.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#0F172A" />
+    <!--
+      Pre-paint theme (EPIC #29 Phase A): set <html data-theme> synchronously
+      during head parse so tokens.css resolves before first paint — no
+      flash-of-wrong-theme. Mirrors the minimal read+apply path of
+      theme/initTheme.ts (a deferred module would flash); ThemeProvider
+      reconciles on mount. Defensive: any failure falls back to the brand
+      default (dark / graphite).
+    -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('uzor-theme');
+          if (t !== 'light' && t !== 'dark') {
+            t =
+              window.matchMedia &&
+              window.matchMedia('(prefers-color-scheme: light)').matches
+                ? 'light'
+                : 'dark';
+          }
+          document.documentElement.setAttribute('data-theme', t);
+          var m = document.querySelector('meta[name="theme-color"]');
+          if (m) m.setAttribute('content', t === 'light' ? '#F8FAFC' : '#0F172A');
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
