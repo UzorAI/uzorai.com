@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom'
 import markUrl from '../brand/uzor-mark.svg'
 import { useLocale } from '../i18n/LocaleProvider'
 
-// Home ports the live uzorai.com hero verbatim (headline, subhead, the узор
-// gloss, and the "one control plane, three jobs" section) into the scaffold.
+// Home ports the live uzorai.com hero verbatim (headline, subhead, the UZOR
+// pattern gloss, and the "one control plane, three jobs" section) into the scaffold.
 // The cube master is the only brand mark here; the legacy graphical artifact on
 // the live static page is NOT carried over (it stays there until the cutover).
 // Copy resolves through t() against the active dictionary (fallback en).
@@ -118,7 +118,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Meaning strip — the узор gloss */}
+      {/* Meaning strip — the UZOR pattern gloss */}
       <section
         style={{
           borderTop: '1px solid rgba(255,255,255,0.07)',
@@ -135,7 +135,7 @@ export default function Home() {
           className="mono"
           style={{ fontSize: 12, letterSpacing: '0.06em', color: 'var(--accent)' }}
         >
-          UZOR · узор
+          UZOR · THE PATTERN
         </span>
         <span style={{ fontSize: 14.5, color: 'var(--muted)' }}>
           {t('home.meaning.text')}
