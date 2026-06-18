@@ -88,11 +88,11 @@ a {
 .app {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .app > main {
-  flex: 1 0 auto;
+  flex: 1;
   padding: 64px 0;
 }
 
