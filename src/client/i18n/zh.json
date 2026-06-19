@@ -56,5 +56,7 @@
   "contact.title": "联系我们",
   "contact.body": "准备好亲眼见证交织的控制平面了吗？申请演示，我们将针对你自己的智能体与工具，逐一展示编排、治理与执行。",
   "contact.email": "hello@uzorai.com",
-  "footer.tagline": "UZOR——编排、治理与执行底层所依循的范式。"
+  "footer.tagline": "UZOR——编排、治理与执行底层所依循的范式。",
+  "footer.deploymentHistory": "部署历史",
+  "footer.back": "返回"
 }

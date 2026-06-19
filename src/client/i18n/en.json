@@ -56,5 +56,7 @@
   "contact.title": "Contact",
   "contact.body": "Ready to see the woven control plane in action? Request a demo and we will walk through orchestration, governance, and execution against your own agents and tools.",
   "contact.email": "hello@uzorai.com",
-  "footer.tagline": "UZOR — the pattern beneath orchestration, governance, and execution."
+  "footer.tagline": "UZOR — the pattern beneath orchestration, governance, and execution.",
+  "footer.deploymentHistory": "Deployment History",
+  "footer.back": "Back"
 }
