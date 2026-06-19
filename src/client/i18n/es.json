@@ -56,5 +56,7 @@
   "contact.title": "Contacto",
   "contact.body": "¿Listo para ver el plano de control entretejido en acción? Solicita una demo y recorreremos la orquestación, la gobernanza y la ejecución con tus propios agentes y herramientas.",
   "contact.email": "hello@uzorai.com",
-  "footer.tagline": "UZOR — el patrón que subyace a la orquestación, la gobernanza y la ejecución."
+  "footer.tagline": "UZOR — el patrón que subyace a la orquestación, la gobernanza y la ejecución.",
+  "footer.deploymentHistory": "Historial de despliegues",
+  "footer.back": "Atrás"
 }

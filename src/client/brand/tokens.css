@@ -21,6 +21,29 @@
   --maxw: 1180px;
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /*
+   * VersionFooter parity tokens (FEAT #57 — htu.io's foundation VersionFooter).
+   * The ported module addresses htu.io's `--color-*` stripe/overlay names; map
+   * them here onto uzorai's semantic tokens so the port stays verbatim and
+   * theme-correct. Most resolve through --bg/--surface/--fg/--muted/--slate-700,
+   * which the light theme below already remaps — so the overlay re-tints for
+   * free. Only the fixed scrim, error red, and brand accent are literal.
+   */
+  --color-stripe-bg: var(--surface);
+  --color-stripe-border: var(--slate-700);
+  --color-overlay: rgba(15, 23, 42, 0.7); /* graphite scrim */
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-border: var(--slate-700);
+  --color-border-strong: var(--slate-700);
+  --color-text-primary: var(--fg);
+  --color-text-secondary: var(--fg);
+  --color-text-tertiary: var(--fg);
+  --color-text-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-brand: var(--accent); /* success/check accent */
+  --color-error: #b91c1c; /* close ✕ + failure status — white glyph on red */
 }
 
 /*

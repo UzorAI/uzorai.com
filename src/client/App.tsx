@@ -6,7 +6,9 @@ import { ROUTES } from './config/routes'
 
 export default function App() {
   return (
-    <div className="app">
+    // paddingBottom clears the fixed-bottom VersionFooter stripe (~44px) so the
+    // content Footer and page never sit hidden behind it (FEAT #57).
+    <div className="app" style={{ paddingBottom: 56 }}>
       <NavMenu />
       <main>
         <div className="wrap">
