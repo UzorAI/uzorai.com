@@ -138,7 +138,7 @@ export default function Home() {
           className="mono"
           style={{ fontSize: 12, letterSpacing: '0.06em', color: 'var(--accent)' }}
         >
-          UZOR · THE PATTERN
+          {t('home.meaning.label')}
         </span>
         <span style={{ fontSize: 14.5, color: 'var(--muted)' }}>
           {t('home.meaning.text')}
