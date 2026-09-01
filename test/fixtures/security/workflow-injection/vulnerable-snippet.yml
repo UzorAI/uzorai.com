@@ -1,0 +1,14 @@
+name: vulnerable-fixture
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        required: true
+        type: string
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Unsafe direct interpolation
+        run: |
+          gh issue view "${{ inputs.issue_number }}" --repo "${{ github.repository }}"

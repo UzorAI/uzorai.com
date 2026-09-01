@@ -1,0 +1,16 @@
+name: safe-fixture
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        required: true
+        type: string
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Safe env-passed value
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+        run: |
+          gh issue view "$ISSUE_NUMBER" --repo "${{ github.repository }}"

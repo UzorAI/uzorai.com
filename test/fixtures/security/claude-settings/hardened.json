@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh:*)",
+      "Bash(git:*)",
+      "Bash(npm:*)",
+      "Read(/tmp/implw-spec-*)"
+    ],
+    "deny": []
+  }
+}

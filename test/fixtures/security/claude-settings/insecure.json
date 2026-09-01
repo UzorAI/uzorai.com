@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "defaultMode": "bypassPermissions",
+    "allow": [
+      "Bash(gh:*)",
+      "Read(//home/zilin/dev/**)",
+      "Write(//home/zilin/actions-runner/_work/**)",
+      "Edit(//home/zilin/dev/**)"
+    ],
+    "deny": []
+  }
+}
