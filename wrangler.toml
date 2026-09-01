@@ -16,7 +16,14 @@ routes = [
 ]
 
 # Hono serves the built client; SPA fallback is handled by the assets binding.
+# run_worker_first (CHORE #84): without it, the assets pipeline serves a
+# matching static file directly and never invokes src/server/index.ts, so the
+# host-allowlist gate and security-header middleware would silently never run
+# for the site's actual pages — only for paths with no matching asset. Forcing
+# the Worker to run first makes it the one true gate for every request; it
+# then explicitly delegates to c.env.ASSETS.fetch() for allowlisted hosts.
 [assets]
 directory = "./dist/client"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
+run_worker_first = true
