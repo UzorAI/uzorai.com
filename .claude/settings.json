@@ -1,6 +1,5 @@
 {
   "permissions": {
-    "defaultMode": "bypassPermissions",
     "allow": [
       "Bash(gh:*)",
       "Bash(git:*)",
@@ -33,13 +32,7 @@
       "Bash(curl:*)",
       "Bash(jq:*)",
       "Bash(test:*)",
-      "Read(//home/zilin/dev/**)",
-      "Read(//home/zilin/actions-runner/_work/**)",
-      "Read(//tmp/**)",
-      "Write(//home/zilin/dev/**)",
-      "Write(//home/zilin/actions-runner/_work/**)",
-      "Edit(//home/zilin/dev/**)",
-      "Edit(//home/zilin/actions-runner/_work/**)"
+      "Read(/tmp/implw-spec-*)"
     ],
     "deny": []
   }

@@ -8,3 +8,25 @@ dist/
 
 # Windows / WSL "mark of the web" metadata — rides along on /mnt/c copies; never track.
 *:Zone.Identifier
+
+# Environment / secrets (REFACTOR #83) — never commit; .env.example is the
+# tracked template and must stay excluded from every pattern below.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*credentials*.json
+.secrets/
+
+# Runtime state / local databases
+*.sqlite
+*.sqlite3
+*.db
+
+# Claude Code local overrides and agent scratch/temp files — machine-specific,
+# never shared via git.
+.claude/settings.local.json
+.claude/tmp/
+*.tmp

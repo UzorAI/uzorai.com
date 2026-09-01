@@ -25,6 +25,15 @@
 #
 # Observe-only (blocking: false) until an explicit later decision, after an
 # observe-only bake period with real PR traffic, flips it to blocking.
+#
+# Documented pin exception (REFACTOR #83, D5/AC4): this reusable workflow is
+# intentionally pinned to a release tag rather than an immutable commit SHA.
+# zi007lin/htu-pr-validation is versioned as a deliberate, human-managed
+# "contract" (see the v0.2.0/v0.3.0/v0.4.0 history above, each bumped in its
+# own reviewed commit) — pinning to a SHA would replace that reviewed
+# version-bump process with an opaque hash and gain no additional integrity
+# guarantee the tag-bump discipline doesn't already provide. scripts/security
+# /assert-workflow-hardening.mjs allow-lists this exact reference.
 
 name: PR Validation
 on:

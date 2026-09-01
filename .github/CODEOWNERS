@@ -1,0 +1,10 @@
+# Protected paths (REFACTOR #83) — governance-sensitive files require review
+# from the designated repository approver. This complements, and does not
+# replace, the PR-review requirement already enforced by the /implw flow
+# (see docs/IMPLW_FLOW.md): Gate 1 governs whether implementation starts,
+# CODEOWNERS + branch protection govern whether it merges.
+/.github/workflows/  @daniel-silvers
+/.github/CODEOWNERS  @daniel-silvers
+/.claude/             @daniel-silvers
+/scripts/security/    @daniel-silvers
+/.gitignore           @daniel-silvers
