@@ -58,5 +58,6 @@
   "contact.email": "hello@uzorai.com",
   "footer.tagline": "UZOR——编排、治理与执行底层所依循的范式。",
   "footer.deploymentHistory": "部署历史",
-  "footer.back": "返回"
+  "footer.back": "返回",
+  "staging.notice": "预发布 / 演示环境——非生产环境。"
 }

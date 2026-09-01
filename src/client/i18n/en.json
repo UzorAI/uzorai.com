@@ -58,5 +58,6 @@
   "contact.email": "hello@uzorai.com",
   "footer.tagline": "UZOR — the pattern beneath orchestration, governance, and execution.",
   "footer.deploymentHistory": "Deployment History",
-  "footer.back": "Back"
+  "footer.back": "Back",
+  "staging.notice": "Staging / demo environment — not production."
 }

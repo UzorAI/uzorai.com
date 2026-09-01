@@ -58,5 +58,6 @@
   "contact.email": "hello@uzorai.com",
   "footer.tagline": "UZOR — паттерн, лежащий в основе оркестрации, управления и выполнения.",
   "footer.deploymentHistory": "История развёртываний",
-  "footer.back": "Назад"
+  "footer.back": "Назад",
+  "staging.notice": "Стейджинг / демо-среда — не продакшн."
 }

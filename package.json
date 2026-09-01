@@ -6,10 +6,11 @@
   "description": "UzorAI / uzorai.com — HTU framework scaffold (React 19 + Vite + Hono on Cloudflare Workers). Phase 1 of REFACTOR #15; additive and isolated from the production static site.",
   "scripts": {
     "dev": "vite",
-    "test": "node scripts/assert-no-translate.mjs && node scripts/security/assert-workflow-hardening.mjs",
-    "build": "node scripts/assert-no-translate.mjs && node scripts/security/assert-workflow-hardening.mjs && tsc --noEmit && vite build",
+    "test": "node scripts/assert-no-translate.mjs && node scripts/security/assert-workflow-hardening.mjs && node scripts/security/assert-secret-patterns.mjs && node scripts/security/assert-clean-lockfile.mjs && node test/security/host-contract.test.mjs && node test/security/wiring-static.test.mjs && node test/security/frontend-boundaries.test.mjs",
+    "build": "node scripts/assert-no-translate.mjs && node scripts/security/assert-workflow-hardening.mjs && node scripts/security/assert-secret-patterns.mjs && node scripts/security/assert-clean-lockfile.mjs && node test/security/host-contract.test.mjs && node test/security/wiring-static.test.mjs && node test/security/frontend-boundaries.test.mjs && tsc --noEmit && vite build",
     "preview": "vite preview",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "security:audit": "node scripts/security/run-dependency-audit.mjs"
   },
   "dependencies": {
     "hono": "^4.6.14",

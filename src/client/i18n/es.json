@@ -58,5 +58,6 @@
   "contact.email": "hello@uzorai.com",
   "footer.tagline": "UZOR — el patrón que subyace a la orquestación, la gobernanza y la ejecución.",
   "footer.deploymentHistory": "Historial de despliegues",
-  "footer.back": "Atrás"
+  "footer.back": "Atrás",
+  "staging.notice": "Entorno de staging / demo — no es producción."
 }

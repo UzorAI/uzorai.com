@@ -25,6 +25,10 @@ dist/
 *.sqlite3
 *.db
 
+# Generated report from scripts/security/run-dependency-audit.mjs (CHORE
+# #84) — a point-in-time npm audit record, not a tracked artifact.
+security-audit-report.json
+
 # Claude Code local overrides and agent scratch/temp files — machine-specific,
 # never shared via git.
 .claude/settings.local.json
