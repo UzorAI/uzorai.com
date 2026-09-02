@@ -231,6 +231,17 @@ report("pr-validation.yml: actions pinned to immutable SHA or documented excepti
 report("deploy.yml: actions pinned to immutable SHA or documented exception", checkActionPinning(deployYml));
 report("implw.yml: checkout steps set persist-credentials explicitly", checkCheckoutCredentialPersistence(implwYml));
 report("deploy.yml: checkout steps set persist-credentials explicitly", checkCheckoutCredentialPersistence(deployYml));
+report("deploy.yml: production promotion requires explicit PROD confirmation", [
+  !deployYml.includes('if [ "$PRODUCTION_CONFIRMATION" != "PROD" ]')
+    ? "missing exact production confirmation guard"
+    : null,
+  !deployYml.includes('npx wrangler deploy --env "$DEPLOY_TARGET"')
+    ? "deployment does not use the validated named environment"
+    : null,
+  !deployYml.includes("dev|demo)") || !deployYml.includes("production)")
+    ? "release target allowlist is incomplete"
+    : null,
+].filter(Boolean));
 report("implw.yml: trust-boundary guards present", checkTrustBoundaryGuards(implwYml));
 
 report("`.claude/settings.json`: no bypassPermissions or broad path grants", checkClaudeSettings(JSON.parse(read(".claude/settings.json"))));

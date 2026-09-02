@@ -1,22 +1,39 @@
 # UzorAI Worker — REFACTOR #15.
-# Production cutover complete (2026-06-13): the Worker is deployed and all four
-# custom domains (uzorai.com, uzor.ai, www.uzorai.com, www.uzor.ai) are bound to
-# it Cloudflare-side. CI deploys via .github/workflows/deploy.yml
-# (npm run deploy -> wrangler deploy).
+# Named release environments keep development, demo, and production independently
+# deployable. Bare `npm run deploy` is deliberately safe and targets dev.
 name = "uzorai"
 main = "src/server/index.ts"
 compatibility_date = "2025-01-01"
 
-# Custom-domain routes — all bound to the Worker (control-plane) as of cutover.
+[env.dev]
+name = "uzorai-dev"
+routes = [{ pattern = "dev.uzorai.com", custom_domain = true }]
+
+[env.dev.assets]
+directory = "./dist/client"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+[env.demo]
+name = "uzorai-demo"
 routes = [
   { pattern = "uzorai.com", custom_domain = true },
-  { pattern = "uzor.ai", custom_domain = true },
   { pattern = "www.uzorai.com", custom_domain = true },
+]
+
+[env.demo.assets]
+directory = "./dist/client"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+[env.production]
+name = "uzorai-production"
+routes = [
+  { pattern = "uzor.ai", custom_domain = true },
   { pattern = "www.uzor.ai", custom_domain = true },
 ]
 
-# Hono serves the built client; SPA fallback is handled by the assets binding.
-[assets]
+[env.production.assets]
 directory = "./dist/client"
 binding = "ASSETS"
 not_found_handling = "single-page-application"

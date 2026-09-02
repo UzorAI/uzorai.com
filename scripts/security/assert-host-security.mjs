@@ -5,7 +5,7 @@
  * Regression guard for CHORE #88 (Worker/Browser Boundary Hardening):
  * exercises the REAL host-allowlist module (src/shared/hostAllowlist.js —
  * the same file the Worker imports at runtime) against the four approved
- * hosts plus a battery of malformed/suffixed/port-confused/case/Unicode-
+ * hosts plus the development host and a battery of malformed/suffixed/port-confused/case/Unicode-
  * confused inputs, and cross-checks it against wrangler.toml's routes list
  * so the deploy config and the code allowlist can never silently drift
  * apart.
@@ -43,6 +43,7 @@ function report(label, violations) {
 // ---------------------------------------------------------------------------
 
 const APPROVED = {
+  "dev.uzorai.com": "development",
   "uzorai.com": "staging",
   "www.uzorai.com": "staging",
   "uzor.ai": "production",
@@ -120,7 +121,7 @@ report(
 
 // ---------------------------------------------------------------------------
 // Drift guard: wrangler.toml's bound custom-domain routes must be exactly
-// the same four hosts as the code allowlist — in both directions.
+// the same five hosts as the code allowlist — in both directions.
 // ---------------------------------------------------------------------------
 
 const wranglerToml = read("wrangler.toml");

@@ -25,7 +25,8 @@ export function resolveHeroModeFrom(
 ): HeroMode {
   if (!modelValid) return 'legacy'
   const normalized = normalizeHost(rawHost)
-  return getHostRole(normalized) === 'staging' ? 'engine' : 'legacy'
+  const role = getHostRole(normalized)
+  return role === 'development' || role === 'staging' ? 'engine' : 'legacy'
 }
 
 /** Convenience wrapper that checks the shipped canonical model's validity. */
