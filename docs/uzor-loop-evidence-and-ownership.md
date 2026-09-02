@@ -28,6 +28,44 @@ Classifications used below:
   a downstream phase (#71) can adapt the hero to consume a derived sequence
   without redesigning the surrounding page.
 
+## Legacy UZOR Loop prototype (`zi007lin/htu-foundation`)
+
+- **Evidence**: the preserved prototype is
+  `docs/demos/uzor-loop-hero.html` in `zi007lin/htu-foundation` (blob SHA
+  `8482d975b8c23531d8a368714f1fb08217251c38`). Research checkpoint
+  `UzorAI/uzorai.com#68` traces it to governing FEAT
+  `zi007lin/htu-foundation#411`, merged preservation PR #413, source commit
+  `dc60a87a746c916583a58a6690d7c29cdb6c7709`, and merge commit
+  `b39926dd65d24a762aa549b4a4c8a9afb676145b`. The prototype's ticker mixes
+  process stages with results, transient statuses, governance properties,
+  and brand copy; it is experimental and is not the canonical live homepage.
+- **Ownership**: `zi007lin/htu-foundation` owns the preserved source. It is
+  cross-repository evidence only; `UzorAI/uzorai.com` owns any future public
+  implementation through separately governed work.
+- **Classification**: **KEEP + ADAPT** as reference evidence. Preserve the
+  token construction, visual exploration, and documented motion findings,
+  but downstream #71 must replace the mixed ticker semantics with derived
+  data from `UZOR_LOOP_STAGES`. Do not copy the prototype wholesale or treat
+  its source array as canonical.
+
+## Governing evidence chain
+
+| Evidence | Role |
+|---|---|
+| `UzorAI/uzorai.com#68` | Research checkpoint that identified the prototype, semantic mismatch, canonical ordering rule, and accessibility constraints. |
+| `UzorAI/uzorai.com#69` | Governing UZOR Cultural Engine EPIC and phase dependency graph. |
+| `UzorAI/uzorai.com#70` | Approved Phase 1 research contract and acceptance criteria verified by this document. |
+| `UzorAI/uzorai.com#94` | Scored implementation child that authorized materializing the typed model, audit, and tests. |
+| `UzorAI/uzorai.com#95` | Merged implementation PR (`e321cf749b646247c0033ee090ccf1a61994f12e`). |
+| `UzorAI/uzorai.com#96` | Merged Node 20 test-harness correction (`3928c49a2bbc99350c4c420a63402c40737d48bc`). |
+| `zi007lin/htu-foundation#411` | Original governing prototype FEAT. |
+| `zi007lin/htu-foundation#413` | Merged PR preserving the legacy demo. |
+
+The successful deployment of merge commit
+`3928c49a2bbc99350c4c420a63402c40737d48bc` is recorded by GitHub Actions
+run `33647176991`; all four configured hosts returned HTTP 200 from
+`/healthz` after that run.
+
 ## Brand / token assets (`src/client/brand/`, `branding/`)
 
 - **Evidence**: `src/client/brand/tokens.css` defines the role-bound
@@ -155,6 +193,7 @@ Classifications used below:
 | Subject | Classification | Owner (CODEOWNERS) |
 |---|---|---|
 | Hero (`Home.tsx`) | KEEP + ADAPT | unresolved |
+| Legacy UZOR Loop prototype | KEEP + ADAPT (reference evidence only) | `zi007lin/htu-foundation` |
 | Brand/token assets | KEEP AS-IS | unresolved |
 | i18n / RTL | KEEP + ADAPT | unresolved |
 | Browser storage (`safeStorage.js`) | KEEP AS-IS | unresolved |
