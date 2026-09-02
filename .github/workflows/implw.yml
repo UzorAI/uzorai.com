@@ -191,6 +191,11 @@ jobs:
         timeout-minutes: 22
         env:
           SPEC_PATH: ${{ steps.verify_issue.outputs.spec_path }}
+          ISSUE_NUMBER: ${{ steps.validate.outputs.issue_number }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          HEARTBEAT_INTERVAL_RAW: ${{ vars.IMPLW_HEARTBEAT_INTERVAL_SECONDS }}
+          HEARTBEAT_STALL_WINDOW_RAW: ${{ vars.IMPLW_HEARTBEAT_STALL_WINDOW_SECONDS }}
         # No GH_TOKEN env: claude inherits the self-hosted runner's persistent
         # `gh auth` (operator PAT), which is what enables `gh pr create` to
         # trigger downstream workflow_dispatch (GitHub anti-recursion bypasses
@@ -230,12 +235,58 @@ jobs:
           # ask-mode, blocks on the first gated tool, and times out against
           # `< /dev/null`. See BUG htu-foundation#189; verified remedy in
           # streettt.com#970.
+          RAW_LOG="$(mktemp -t "implw-claude-${ISSUE_NUMBER}-XXXX.jsonl")"
+          TELEMETRY_PATH=".implw/telemetry/claude-${RUN_ID}-first.json"
+          DIAGNOSTIC_PATH=".implw/telemetry/claude-${RUN_ID}-first.diagnostic.jsonl"
+          HEARTBEAT_INTERVAL_SECONDS="${HEARTBEAT_INTERVAL_RAW:-60}"
+          HEARTBEAT_STALL_WINDOW_SECONDS="${HEARTBEAT_STALL_WINDOW_RAW:-120}"
+          HEARTBEAT_PID=""
+          cleanup_runtime() {
+            if [ -n "$HEARTBEAT_PID" ]; then
+              kill "$HEARTBEAT_PID" 2>/dev/null || true
+              wait "$HEARTBEAT_PID" 2>/dev/null || true
+            fi
+            rm -f "$RAW_LOG"
+          }
+          trap cleanup_runtime EXIT INT TERM
+
+          START_TS=$(date +%s)
+          echo "::notice title=implw timeline::event=provider_started issue=$ISSUE_NUMBER provider=claude phase=implementation status=started elapsed_seconds=0 detail=running"
           set +e
-          timeout 20m claude --dangerously-skip-permissions -p "/implw $SPEC_PATH" < /dev/null
+          timeout 20m claude --dangerously-skip-permissions --debug --verbose --output-format stream-json -p "/implw $SPEC_PATH" < /dev/null > "$RAW_LOG" 2>&1 &
+          PROVIDER_PID=$!
+          ./scripts/implw-provider-heartbeat.sh "$PROVIDER_PID" claude "$RAW_LOG" "$HEARTBEAT_INTERVAL_SECONDS" "$HEARTBEAT_STALL_WINDOW_SECONDS" "$ISSUE_NUMBER" &
+          HEARTBEAT_PID=$!
+          wait "$PROVIDER_PID"
           CLAUDE_EXIT=$?
+          cleanup_runtime
+          HEARTBEAT_PID=""
           set -e
+          ELAPSED=$(( $(date +%s) - START_TS ))
+          if [ "$CLAUDE_EXIT" = 0 ]; then PROVIDER_STATUS=success; else PROVIDER_STATUS=failed; fi
+          echo "implw_provider_heartbeat provider=claude issue=$ISSUE_NUMBER status=completed provider_exit=$CLAUDE_EXIT elapsed_seconds=$ELAPSED"
+          echo "::notice title=implw timeline::event=provider_completed issue=$ISSUE_NUMBER provider=claude phase=implementation status=$PROVIDER_STATUS elapsed_seconds=$ELAPSED detail=exit_$CLAUDE_EXIT"
+
+          if ./scripts/implw-claude-telemetry.sh "$RAW_LOG" "$TELEMETRY_PATH" "$DIAGNOSTIC_PATH" first unknown "$REPOSITORY" "$RUN_ID" "$ISSUE_NUMBER" "$CLAUDE_EXIT"; then
+            echo "telemetry_path=$TELEMETRY_PATH" >> "$GITHUB_OUTPUT"
+            echo "diagnostic_path=$DIAGNOSTIC_PATH" >> "$GITHUB_OUTPUT"
+            jq -c . "$TELEMETRY_PATH" | sed 's/^/implw_claude_telemetry=/'
+          else
+            echo "::warning title=implw Claude telemetry::usage extraction failed; provider outcome is unchanged"
+          fi
           echo "claude_exit=$CLAUDE_EXIT" >> "$GITHUB_OUTPUT"
           exit "$CLAUDE_EXIT"
+
+      - name: Upload Claude usage telemetry
+        if: always() && steps.claude_run.outputs.telemetry_path != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: claude-usage-${{ github.run_id }}-first
+          path: |
+            ${{ steps.claude_run.outputs.telemetry_path }}
+            ${{ steps.claude_run.outputs.diagnostic_path }}
+          if-no-files-found: warn
 
       - name: Cleanup spec tmp file
         if: always()
