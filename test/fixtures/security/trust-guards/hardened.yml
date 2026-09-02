@@ -1,0 +1,58 @@
+name: hardened-trust-guard-fixture
+# Minimal snippet exercising every REFACTOR #83/#87 trust-boundary guard
+# marker that checkTrustBoundaryGuards() looks for. Not a runnable workflow —
+# a text fixture for the static checker.
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        required: true
+        type: string
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify repository context
+        run: |
+          if [ "${{ github.repository }}" != "UzorAI/uzorai.com" ]; then
+            echo "::error::unexpected repository context"; exit 1
+          fi
+
+      - name: Verify live issue trust
+        run: |
+          STATE=$(jq -r '.state' <<<"$ISSUE_JSON")
+          if [ "$STATE" != "OPEN" ]; then
+            echo "::error::issue is not OPEN"; exit 1
+          fi
+
+          if jq -e '.labels[] | select(.name == "needs-approval")' <<<"$ISSUE_JSON" >/dev/null; then
+            echo "::error::needs-approval label present"; exit 1
+          fi
+
+          PERMISSION=$(gh api "repos/$OWNER/$NAME/collaborators/$AUTHOR/permission" --jq '.permission')
+
+          EDIT_COUNT=$(gh api graphql -f query='query { userContentEdits(first: 1) { totalCount } } ')
+          if [ "$EDIT_COUNT" != "0" ]; then
+            echo "::error::body edited since creation"; exit 1
+          fi
+
+      - name: Re-verify content hash immediately before execution
+        run: |
+          if [ "$CURRENT_HASH" != "$EXPECTED_HASH" ]; then
+            echo "::error::body changed between validation and execution"; exit 1
+          fi
+
+          if [ -L "$SPEC_PATH" ]; then
+            echo "::error::spec path resolved to a symlink"; exit 1
+          fi
+          case "$(realpath -m "$SPEC_PATH")" in
+            "$(realpath -m "${TMPDIR:-/tmp}")"/*) : ;;
+            *) echo "::error::spec path escaped the expected temp directory"; exit 1 ;;
+          esac
+
+      - name: Run implw via claude
+        run: |
+          unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN
+          if [ -n "${CLAUDE_CODE_USE_BEDROCK:-}${CLAUDE_CODE_USE_VERTEX:-}${CLAUDE_CODE_USE_FOUNDRY:-}" ]; then
+            echo "::error::cloud-provider routing flag set"; exit 2
+          fi

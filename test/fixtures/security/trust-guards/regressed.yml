@@ -1,0 +1,42 @@
+name: regressed-trust-guard-fixture
+# Same shape as hardened.yml but with the fork/cross-repo check, the
+# needs-approval defense-in-depth check, and the spec-path symlink guard
+# silently dropped — proves checkTrustBoundaryGuards() catches a regression
+# rather than only ever matching today's known-good file.
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        required: true
+        type: string
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify live issue trust
+        run: |
+          STATE=$(jq -r '.state' <<<"$ISSUE_JSON")
+          if [ "$STATE" != "OPEN" ]; then
+            echo "::error::issue is not OPEN"; exit 1
+          fi
+
+          PERMISSION=$(gh api "repos/$OWNER/$NAME/collaborators/$AUTHOR/permission" --jq '.permission')
+
+          EDIT_COUNT=$(gh api graphql -f query='query { userContentEdits(first: 1) { totalCount } } ')
+          if [ "$EDIT_COUNT" != "0" ]; then
+            echo "::error::body edited since creation"; exit 1
+          fi
+
+      - name: Re-verify content hash immediately before execution
+        run: |
+          if [ "$CURRENT_HASH" != "$EXPECTED_HASH" ]; then
+            echo "::error::body changed between validation and execution"; exit 1
+          fi
+          case "$(realpath -m "$SPEC_PATH")" in
+            "$(realpath -m "${TMPDIR:-/tmp}")"/*) : ;;
+            *) echo "::error::spec path escaped the expected temp directory"; exit 1 ;;
+          esac
+
+      - name: Run implw via claude
+        run: |
+          unset ANTHROPIC_API_KEY ANTHROPIC_AUTH_TOKEN
