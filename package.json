@@ -6,7 +6,7 @@
   "description": "UzorAI / uzorai.com — HTU framework scaffold (React 19 + Vite + Hono on Cloudflare Workers). Phase 1 of REFACTOR #15; additive and isolated from the production static site.",
   "scripts": {
     "dev": "vite",
-    "test": "node scripts/assert-no-translate.mjs && node scripts/security/assert-workflow-hardening.mjs && node scripts/security/assert-host-security.mjs && node scripts/security/assert-security-headers.mjs && node scripts/security/assert-worker-boundary.mjs && node scripts/security/assert-browser-boundary.mjs && node --test test/implw-*.test.mjs test/uzor-loop-model.test.mjs",
+    "test": "node scripts/assert-no-translate.mjs && node scripts/security/assert-workflow-hardening.mjs && node scripts/security/assert-host-security.mjs && node scripts/security/assert-security-headers.mjs && node scripts/security/assert-worker-boundary.mjs && node scripts/security/assert-browser-boundary.mjs && node --test test/implw-*.test.mjs && tsx --test test/uzor-loop-model.test.mjs",
     "build": "npm test && tsc --noEmit && vite build",
     "test:browser-secrets": "node scripts/security/assert-no-browser-secrets.mjs",
     "preview": "vite preview",
@@ -22,6 +22,7 @@
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "@vitejs/plugin-react": "^4.3.4",
+    "tsx": "^4.20.5",
     "typescript": "^5.7.2",
     "vite": "^6.0.5",
     "wrangler": "^3.99.0"
