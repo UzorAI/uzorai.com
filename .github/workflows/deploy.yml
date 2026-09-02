@@ -1,16 +1,33 @@
-name: Deploy uzorai.com Worker to Cloudflare
+name: Deploy UzorAI Worker to Cloudflare
 on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      target:
+        description: Release environment
+        required: true
+        type: choice
+        options:
+          - dev
+          - demo
+          - production
+      confirmation:
+        description: Type PROD when target is production
+        required: false
+        type: string
 permissions:
   contents: read
 concurrency:
-  group: worker-deploy-uzorai
-  cancel-in-progress: true
+  group: worker-deploy-uzorai-${{ github.event_name == 'push' && 'dev' || inputs.target }}
+  cancel-in-progress: false
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'push' && 'dev' || inputs.target }}
+    env:
+      DEPLOY_TARGET: ${{ github.event_name == 'push' && 'dev' || inputs.target }}
+      PRODUCTION_CONFIRMATION: ${{ inputs.confirmation }}
     steps:
       # Pinned to an immutable commit SHA (REFACTOR #87 AC5) rather than the
       # mutable `v4` tag — a compromised upstream tag move would otherwise
@@ -24,8 +41,27 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
-      - name: Build and deploy Worker (production)
-        run: npm run deploy
+      - name: Validate release target
+        run: |
+          set -euo pipefail
+          case "$DEPLOY_TARGET" in
+            dev|demo) ;;
+            production)
+              if [ "$PRODUCTION_CONFIRMATION" != "PROD" ]; then
+                echo "::error::production deployment requires confirmation PROD"
+                exit 1
+              fi
+              ;;
+            *)
+              echo "::error::unsupported deployment target"
+              exit 1
+              ;;
+          esac
+      - name: Build and deploy Worker
+        run: |
+          set -euo pipefail
+          npm run build
+          npx wrangler deploy --env "$DEPLOY_TARGET"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

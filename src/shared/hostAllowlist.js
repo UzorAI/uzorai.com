@@ -9,12 +9,13 @@
  * from what actually ships.
  */
 
-/** @typedef {'staging' | 'production'} HostRole */
+/** @typedef {'development' | 'staging' | 'production'} HostRole */
 
 // Exact allowlist — no suffix/prefix/wildcard matching. uzorai.com and
 // www.uzorai.com stay the staging/demo pair; uzor.ai and www.uzor.ai stay
 // the stable-production pair. One Worker (this one) serves all four.
 export const ALLOWED_HOSTS = Object.freeze({
+  'dev.uzorai.com': 'development',
   'uzorai.com': 'staging',
   'www.uzorai.com': 'staging',
   'uzor.ai': 'production',

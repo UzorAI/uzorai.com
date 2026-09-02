@@ -10,7 +10,10 @@
     "build": "npm test && tsc --noEmit && vite build",
     "test:browser-secrets": "node scripts/security/assert-no-browser-secrets.mjs",
     "preview": "vite preview",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run deploy:dev",
+    "deploy:dev": "npm run build && wrangler deploy --env dev",
+    "deploy:demo": "npm run build && wrangler deploy --env demo",
+    "deploy:production": "npm run build && wrangler deploy --env production"
   },
   "dependencies": {
     "hono": "^4.6.14",

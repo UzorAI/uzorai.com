@@ -6,7 +6,8 @@ import {
   currentHeroMode,
 } from '../src/client/config/heroMode.ts'
 
-test('staging hosts (and only staging hosts) resolve to the engine hero', () => {
+test('development and demo hosts resolve to the engine hero', () => {
+  assert.equal(resolveHeroMode('dev.uzorai.com'), 'engine')
   assert.equal(resolveHeroMode('uzorai.com'), 'engine')
   assert.equal(resolveHeroMode('www.uzorai.com'), 'engine')
   // normalizeHost folds ordinary case confusion onto the same allowlist entry
