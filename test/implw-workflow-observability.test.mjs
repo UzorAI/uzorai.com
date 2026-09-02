@@ -20,6 +20,10 @@ test("workflow emits telemetry without changing provider outcome", () => {
   assert.match(workflow, /implw_claude_telemetry=/);
   assert.match(workflow, /usage extraction failed; provider outcome is unchanged/);
   assert.match(workflow, /exit "\$CLAUDE_EXIT"/);
+  const parser = workflow.indexOf("./scripts/implw-claude-telemetry.sh");
+  const rawCleanup = workflow.indexOf('rm -f "$RAW_LOG"', parser);
+  assert.ok(parser > -1, "telemetry parser must be present");
+  assert.ok(rawCleanup > parser, "raw stream must be removed only after telemetry parsing");
 });
 
 test("artifacts are best effort, metadata-only, and immutably pinned", () => {
