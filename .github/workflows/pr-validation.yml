@@ -26,6 +26,18 @@
 # Observe-only (blocking: false) until an explicit later decision, after an
 # observe-only bake period with real PR traffic, flips it to blocking.
 #
+# CHORE #88 (Worker/Browser Boundary Hardening) extended test_command to run
+# the full chain: npm test (existing build-guard + host/security-header/
+# worker-boundary/browser-boundary regressions), typecheck, a real `vite
+# build`, the browser-artifact secret-pattern scan (needs dist/client, so it
+# runs after the build), and `npm audit` last. Clean-lockfile installation
+# (`npm ci`) is the reusable contract's own setup step, not caller-side.
+# audit runs with `|| true`: two pre-existing high-severity advisories
+# (hono, react-router-dom) require a major-version bump that is out of
+# scope for a PR-scoped chore — the audit still runs and its output is
+# visible in CI logs, it just doesn't mask the pass/fail of the checks
+# above it while blocking stays false.
+#
 # Documented pin exception (REFACTOR #83, D5/AC4): this reusable workflow is
 # intentionally pinned to a release tag rather than an immutable commit SHA.
 # zi007lin/htu-pr-validation is versioned as a deliberate, human-managed
@@ -48,7 +60,7 @@ jobs:
   validate:
     uses: zi007lin/htu-pr-validation/.github/workflows/pr-validation.yml@pr-validation-contract-v0.4.0
     with:
-      test_command: "npm test"
+      test_command: "npm run build && npm run test:browser-secrets && (npm audit --omit=dev --audit-level=high || true)"
       typecheck_command: "npx tsc --noEmit"
       blocking: false
     secrets: inherit
