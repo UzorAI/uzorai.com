@@ -1,0 +1,214 @@
+/*
+ * UzorEngineHero — staging-only presentation (FEAT #98). Scoped entirely
+ * under .uzor-engine-* classes so it never leaks into LegacyHomeHero or any
+ * other route. Logical properties (margin-inline-*, inset-inline-*) are used
+ * throughout so RTL locales mirror automatically (Decision Tree: "Direction
+ * is RTL -> apply text/layout direction only") without a second stylesheet.
+ */
+
+.uzor-engine-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 40px;
+  align-items: center;
+}
+
+.uzor-engine-token-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.uzor-engine-token-wrap::before {
+  content: '';
+  position: absolute;
+  width: 108%;
+  padding-bottom: 108%;
+  border: 1px solid rgba(167, 227, 229, 0.12);
+  border-radius: 50%;
+}
+
+.uzor-engine-token {
+  width: min(280px, 70%);
+  height: auto;
+  filter: drop-shadow(0 0 40px rgba(167, 227, 229, 0.25));
+  animation: uzor-engine-rotate 16s linear infinite;
+}
+
+/* Negative rotation = anti-clockwise. Decorative engine energy only — never
+ * implies reversed stage order (the bricks below carry the real sequence). */
+@keyframes uzor-engine-rotate {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.uzor-engine-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.uzor-engine-eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.uzor-engine-heading {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+}
+
+.uzor-engine-subhead {
+  font-size: 16px;
+  color: var(--muted);
+  max-width: 56ch;
+  line-height: 1.6;
+}
+
+.uzor-engine-controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.uzor-engine-btn {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 10px 20px;
+  border-radius: 11px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: transparent;
+  color: var(--fg);
+}
+
+.uzor-engine-btn-primary {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+}
+
+.uzor-engine-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* --- Structural bricks (process) — separated in markup and styling from
+ * the status/live-region region below, per the Final Spec. --- */
+
+.uzor-engine-bricks-heading {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 10px;
+}
+
+.uzor-engine-bricks {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  list-style: none;
+  /* Never wrap: wrapping would break the upward/rightward staircase offsets
+   * below into overlapping rows. A narrow desktop column scrolls instead —
+   * still a single bounded row of at most one brick per canonical stage. */
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 18px 2px 6px;
+}
+
+.uzor-engine-brick {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(30, 41, 59, 0.4);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  opacity: 0.35;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  /* Bounded upward/rightward construction: each later brick sits a little
+   * higher and a little further along the inline direction than the last.
+   * --brick-index is set inline per item by the component. */
+  transform: translateY(calc(var(--brick-index, 0) * -10px));
+  margin-inline-start: calc(var(--brick-index, 0) * 8px);
+}
+
+.uzor-engine-brick[data-revealed='true'] {
+  opacity: 1;
+  border-color: rgba(167, 227, 229, 0.35);
+}
+
+/* --- Status / evidence region — kept visually and semantically distinct
+ * from the process bricks above. --- */
+
+.uzor-engine-status {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.uzor-engine-detail {
+  font-size: 13.5px;
+  color: var(--muted);
+  max-width: 52ch;
+}
+
+.uzor-engine-payoff {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+.uzor-engine-payoff p {
+  margin: 0;
+}
+
+@media (max-width: 720px) {
+  .uzor-engine-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .uzor-engine-token {
+    width: min(180px, 50%);
+  }
+
+  /* Bounded ordered stack — DOM order (and therefore stage ids) is
+   * untouched; only the layout reflows. */
+  .uzor-engine-bricks {
+    flex-direction: column;
+    align-items: stretch;
+    overflow-x: visible;
+  }
+
+  .uzor-engine-brick {
+    transform: none;
+    margin-inline-start: 0;
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .uzor-engine-token {
+    animation: none;
+  }
+
+  .uzor-engine-brick {
+    transition: none;
+  }
+}
