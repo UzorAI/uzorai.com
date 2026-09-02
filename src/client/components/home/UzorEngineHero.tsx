@@ -1,19 +1,14 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
 import markUrl from '../../brand/uzor-mark.svg'
 import { useLocale } from '../../i18n/LocaleProvider'
 import { dirFor } from '../../config/languages'
 import { getPresentationSequence } from '../../workflow/uzorLoopModel'
 import {
-  UZOR_GO_INITIAL_STATE,
-  UZOR_GO_STAGE_DURATION_MS,
+  UZOR_GO_MANIFEST,
   DEFAULT_SOUND_PREF,
-  advanceUzorGoCycle,
-  currentUzorGoStage,
   readSoundPref,
-  startUzorGoCycle,
   toggleSoundPref,
   writeSoundPref,
-  type UzorGoState,
 } from '../../content/uzorEngineDemo'
 import './UzorEngineHero.css'
 import { useUzorPerformance } from '../../performance/useUzorPerformance'
@@ -35,37 +30,14 @@ export default function UzorEngineHero() {
   // identical to LTR (uzorLoopModel.ts / test/uzor-loop-model.test.mjs).
   const stages = useMemo(() => getPresentationSequence(dir), [dir])
 
-  const [cycle, setCycle] = useState<UzorGoState>(UZOR_GO_INITIAL_STATE)
   const [soundPref, setSoundPref] = useState(DEFAULT_SOUND_PREF)
   const performanceRun = useUzorPerformance(120, soundPref === 'unmuted')
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     setSoundPref(readSoundPref())
   }, [])
 
-  const clearTimer = useCallback(() => {
-    if (timerRef.current !== null) {
-      clearTimeout(timerRef.current)
-      timerRef.current = null
-    }
-  }, [])
-
-  // One bounded timer per running cycle; cleared on every re-run and on
-  // unmount, so a component teardown can never leak a pending advance.
-  useEffect(() => {
-    if (cycle.status !== 'running') return undefined
-    clearTimer()
-    timerRef.current = setTimeout(() => {
-      setCycle((prev) => advanceUzorGoCycle(prev))
-    }, UZOR_GO_STAGE_DURATION_MS)
-    return clearTimer
-  }, [cycle, clearTimer])
-
   const handleStart = useCallback(() => {
-    // startUzorGoCycle no-ops while already running — this is what rejects
-    // an overlapping second timer (AC4), not a disabled button.
-    setCycle((prev) => startUzorGoCycle(prev))
     performanceRun.start()
   }, [performanceRun])
 
@@ -77,8 +49,9 @@ export default function UzorEngineHero() {
     })
   }, [])
 
-  const revealedCount = cycle.status === 'idle' ? 0 : cycle.stageIndex + 1
-  const activeStage = currentUzorGoStage(cycle)
+  const revealedCount = !performanceRun.started ? 0 : performanceRun.position.bar <= 8 ? 0 : Math.min(stages.length, Math.ceil((performanceRun.position.bar - 8) * stages.length / 8))
+  const activeEvent = PERFORMANCE_EVENTS.filter((event)=>event.bar<=performanceRun.position.bar && event.stageId).at(-1)
+  const activeStage = UZOR_GO_MANIFEST.find((stage)=>stage.id===activeEvent?.stageId) ?? null
   const activeCanonicalLabel =
     activeStage != null
       ? stages.find((stage) => stage.id === activeStage.id)?.label ?? ''
@@ -87,9 +60,9 @@ export default function UzorEngineHero() {
   // A single announcement channel — this element is both the visible status
   // text and the only aria-live region, so nothing here is announced twice.
   const liveText =
-    cycle.status === 'idle'
+    !performanceRun.started
       ? t('home.engine.status.idle')
-      : cycle.status === 'complete'
+      : performanceRun.position.complete
         ? t('home.engine.status.complete')
         : `${t('home.engine.status.buildingPrefix')} ${activeCanonicalLabel}`
 
@@ -107,7 +80,7 @@ export default function UzorEngineHero() {
 
         <div className="uzor-engine-controls">
           <button type="button" className="uzor-engine-btn uzor-engine-btn-primary" onClick={handleStart}>
-            {cycle.status === 'running' ? t('home.engine.go.running') : t('home.engine.go.start')}
+            {performanceRun.running ? t('home.engine.go.running') : t('home.engine.go.start')}
           </button>
           <button
             type="button"
