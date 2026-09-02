@@ -16,6 +16,8 @@ import {
   type UzorGoState,
 } from '../../content/uzorEngineDemo'
 import './UzorEngineHero.css'
+import { useUzorPerformance } from '../../performance/useUzorPerformance'
+import { PERFORMANCE_EVENTS, REPRESENTATIVE_ARTIFACT } from '../../performance/uzorPerformanceManifest'
 
 // Staging-only hero (FEAT #98, Phase 2 of EPIC #69/#70). Only mounted when
 // src/client/config/heroMode.ts resolves 'engine' — Home.tsx owns that gate,
@@ -35,6 +37,7 @@ export default function UzorEngineHero() {
 
   const [cycle, setCycle] = useState<UzorGoState>(UZOR_GO_INITIAL_STATE)
   const [soundPref, setSoundPref] = useState(DEFAULT_SOUND_PREF)
+  const performanceRun = useUzorPerformance(120, soundPref === 'unmuted')
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
@@ -63,7 +66,8 @@ export default function UzorEngineHero() {
     // startUzorGoCycle no-ops while already running — this is what rejects
     // an overlapping second timer (AC4), not a disabled button.
     setCycle((prev) => startUzorGoCycle(prev))
-  }, [])
+    performanceRun.start()
+  }, [performanceRun])
 
   const handleToggleSound = useCallback(() => {
     setSoundPref((prev) => {
@@ -135,10 +139,13 @@ export default function UzorEngineHero() {
         <p className="uzor-engine-status" role="status" aria-live="polite">
           {liveText}
         </p>
+        <p className="uzor-engine-detail">Bar {performanceRun.position.bar} · Beat {performanceRun.position.beatInBar} · {PERFORMANCE_EVENTS.find((event) => event.bar === performanceRun.position.bar)?.phase ?? 'orientation'}</p>
         {activeStage != null && <p className="uzor-engine-detail">{t(activeStage.detailKey)}</p>}
 
-        {cycle.status === 'complete' && (
+        {performanceRun.position.complete && (
           <div className="uzor-engine-payoff">
+            <strong>{REPRESENTATIVE_ARTIFACT.label}</strong>
+            <span>{REPRESENTATIVE_ARTIFACT.type} · model {REPRESENTATIVE_ARTIFACT.workflowVersion}</span>
             <p>{t('home.engine.payoff.1')}</p>
             <p>{t('home.engine.payoff.2')}</p>
             <p>{t('home.engine.payoff.3')}</p>
