@@ -5,6 +5,13 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
+    // src/shared/* is plain JS (JSDoc-typed) on purpose: it's the single
+    // source of truth for the host/security/URL/storage boundary logic, and
+    // scripts/security/*.mjs regression-test it directly with Node — no TS
+    // build step, no test-framework devDependency. allowJs lets src/server
+    // and src/client import it with inferred types; checkJs stays off so
+    // strict TS checking is unchanged for the app's own .ts/.tsx files.
+    "allowJs": true,
     "jsx": "react-jsx",
     "strict": true,
     "noEmit": true,

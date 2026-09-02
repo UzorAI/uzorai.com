@@ -13,6 +13,7 @@ import {
   isSupportedLocale,
   type LocaleCode,
 } from '../config/languages'
+import { readBoundedStorage, writeBoundedStorage } from '../../shared/safeStorage'
 // `en` is the canonical fallback — imported eagerly so `t()` can always resolve
 // a missing key to its English string, even before the active dictionary loads.
 import en from './en.json'
@@ -40,7 +41,7 @@ const LocaleContext = createContext<LocaleContextValue | null>(null)
 // A corrupted/unknown stored value fails the enum check and falls back to `en`.
 function detectInitialLocale(): LocaleCode {
   if (typeof window === 'undefined') return DEFAULT_LOCALE
-  const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY)
+  const stored = readBoundedStorage(LOCALE_STORAGE_KEY)
   if (isSupportedLocale(stored)) return stored
   for (const pref of window.navigator.languages ?? []) {
     const base = pref.toLowerCase().split('-')[0]
@@ -86,7 +87,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   }, [locale])
 
   const setLocale = useCallback((code: LocaleCode) => {
-    window.localStorage.setItem(LOCALE_STORAGE_KEY, code)
+    writeBoundedStorage(LOCALE_STORAGE_KEY, code)
     setLocaleState(code)
   }, [])
 

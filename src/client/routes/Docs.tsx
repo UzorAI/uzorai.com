@@ -1,5 +1,6 @@
 import markUrl from '../brand/uzor-mark.svg'
 import { useLocale } from '../i18n/LocaleProvider'
+import SafeExternalLink from '../components/SafeExternalLink'
 
 // On-brand Docs route. The one concrete doc surface that exists today is the
 // governed MCP endpoint, so this links it directly; deeper docs land in a later
@@ -19,7 +20,7 @@ export default function Docs() {
       <p style={{ color: 'var(--muted)', marginTop: 16, lineHeight: 1.6 }}>
         {t('docs.body')}
       </p>
-      <a
+      <SafeExternalLink
         href="https://skills.uzorai.com/mcp"
         className="mono"
         style={{
@@ -33,7 +34,7 @@ export default function Docs() {
         }}
       >
         https://skills.uzorai.com/mcp
-      </a>
+      </SafeExternalLink>
     </section>
   )
 }

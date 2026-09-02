@@ -3,6 +3,7 @@
 // `ThemeProvider` reuses these helpers to reconcile on mount; an inline
 // pre-paint snippet in index.html duplicates the minimal read+apply path so
 // the theme lands before first paint (a deferred module would flash).
+import { readBoundedStorage, writeBoundedStorage } from '../../shared/safeStorage'
 
 export type Theme = 'light' | 'dark'
 
@@ -23,13 +24,8 @@ export function isTheme(value: unknown): value is Theme {
 /** Persisted choice if valid, else null. Defensive: never throws on a locked
  *  or unavailable localStorage. */
 export function getStoredTheme(): Theme | null {
-  if (typeof window === 'undefined') return null
-  try {
-    const stored = window.localStorage.getItem(THEME_STORAGE_KEY)
-    return isTheme(stored) ? stored : null
-  } catch {
-    return null
-  }
+  const stored = readBoundedStorage(THEME_STORAGE_KEY)
+  return isTheme(stored) ? stored : null
 }
 
 /** OS preference. Light only when explicitly requested; dark is the brand
@@ -66,12 +62,8 @@ export function initTheme(): Theme {
 
 /** Persist + apply in one step (used by the provider's setter). */
 export function persistTheme(theme: Theme): void {
-  if (typeof window !== 'undefined') {
-    try {
-      window.localStorage.setItem(THEME_STORAGE_KEY, theme)
-    } catch {
-      // Storage unavailable (private mode / quota) — apply in-session only.
-    }
-  }
+  // writeBoundedStorage no-ops (and never throws) when storage is
+  // unavailable (private mode / quota) — apply in-session only in that case.
+  writeBoundedStorage(THEME_STORAGE_KEY, theme)
   applyTheme(theme)
 }

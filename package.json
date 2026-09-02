@@ -6,8 +6,9 @@
   "description": "UzorAI / uzorai.com — HTU framework scaffold (React 19 + Vite + Hono on Cloudflare Workers). Phase 1 of REFACTOR #15; additive and isolated from the production static site.",
   "scripts": {
     "dev": "vite",
-    "test": "node scripts/assert-no-translate.mjs && node scripts/security/assert-workflow-hardening.mjs",
-    "build": "node scripts/assert-no-translate.mjs && node scripts/security/assert-workflow-hardening.mjs && tsc --noEmit && vite build",
+    "test": "node scripts/assert-no-translate.mjs && node scripts/security/assert-workflow-hardening.mjs && node scripts/security/assert-host-security.mjs && node scripts/security/assert-security-headers.mjs && node scripts/security/assert-worker-boundary.mjs && node scripts/security/assert-browser-boundary.mjs",
+    "build": "npm test && tsc --noEmit && vite build",
+    "test:browser-secrets": "node scripts/security/assert-no-browser-secrets.mjs",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy"
   },
