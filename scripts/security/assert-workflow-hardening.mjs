@@ -121,6 +121,61 @@ function checkClaudeSettings(settings) {
   return violations;
 }
 
+// Every `actions/checkout` step must set `persist-credentials:` explicitly
+// (true or false) rather than relying on the action's implicit default —
+// REFACTOR #87 bullet 3 ("make checkout credential persistence deliberate").
+// A future checkout step added without an opinion on this should fail the
+// build, not silently inherit whatever the action's current default is.
+function checkCheckoutCredentialPersistence(yamlText) {
+  const violations = [];
+  const lines = yamlText.split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(/^(\s*)-\s*uses:\s*actions\/checkout@/);
+    if (!m) continue;
+    const stepIndent = m[1].length;
+    let sawPersistCredentials = false;
+    for (let j = i + 1; j < lines.length; j++) {
+      const line = lines[j];
+      if (line.trim() === "") continue;
+      const indent = line.match(/^ */)[0].length;
+      if (indent <= stepIndent) break; // next sibling step or dedent — block ended
+      if (/persist-credentials:\s*(true|false)/.test(line)) {
+        sawPersistCredentials = true;
+        break;
+      }
+    }
+    if (!sawPersistCredentials) {
+      violations.push(`line ${i + 1}: actions/checkout step has no explicit persist-credentials: true|false`);
+    }
+  }
+  return violations;
+}
+
+// Regression guard for the trust-boundary checks REFACTOR #83 established in
+// implw.yml (fork/cross-repo rejection, stale/replayed-issue rejection, Gate
+// 1 label defense-in-depth, edited-body rejection, TOCTOU body-hash
+// re-verification, symlink/traversal guard on the spec temp file, and
+// cloud-credential-routing isolation) — REFACTOR #87 bullet 7. Each entry is
+// a literal marker for one guard; a future edit that silently drops a guard
+// (not just weakens the pinning/interpolation checks above) trips this.
+const REQUIRED_TRUST_GUARDS = [
+  { name: "canonical-repository (reject fork/cross-repo)", pattern: /github\.repository\s*\}\}"\s*!=\s*"UzorAI\/uzorai\.com"/ },
+  { name: "issue-state (reject closed/stale/replayed)", pattern: /"\$STATE"\s*!=\s*"OPEN"/ },
+  { name: "needs-approval label (Gate 1 defense-in-depth)", pattern: /needs-approval/ },
+  { name: "author write-permission (reject non-collaborator/fork author)", pattern: /collaborators\/\$AUTHOR\/permission/ },
+  { name: "userContentEdits (reject edited/bait-and-switch body)", pattern: /userContentEdits/ },
+  { name: "TOCTOU body-hash re-verification", pattern: /CURRENT_HASH"\s*!=\s*"\$EXPECTED_HASH"/ },
+  { name: "spec-path symlink guard", pattern: /-L\s*"\$SPEC_PATH"/ },
+  { name: "spec-path traversal guard", pattern: /realpath -m/ },
+  { name: "cloud-provider credential-routing isolation", pattern: /CLAUDE_CODE_USE_BEDROCK/ },
+];
+
+function checkTrustBoundaryGuards(yamlText) {
+  return REQUIRED_TRUST_GUARDS.filter(({ pattern }) => !pattern.test(yamlText)).map(
+    ({ name }) => `missing trust-boundary guard: ${name}`,
+  );
+}
+
 const REQUIRED_GITIGNORE_LINES = [
   ".env",
   ".env.*",
@@ -166,11 +221,17 @@ function report(label, violations) {
 
 const implwYml = read(".github/workflows/implw.yml");
 const prValidationYml = read(".github/workflows/pr-validation.yml");
+const deployYml = read(".github/workflows/deploy.yml");
 
 report("implw.yml: no unsafe expression interpolation in run: bodies", scanForUnsafeInterpolation(implwYml));
 report("pr-validation.yml: no unsafe expression interpolation in run: bodies", scanForUnsafeInterpolation(prValidationYml));
+report("deploy.yml: no unsafe expression interpolation in run: bodies", scanForUnsafeInterpolation(deployYml));
 report("implw.yml: actions pinned to immutable SHA or documented exception", checkActionPinning(implwYml));
 report("pr-validation.yml: actions pinned to immutable SHA or documented exception", checkActionPinning(prValidationYml));
+report("deploy.yml: actions pinned to immutable SHA or documented exception", checkActionPinning(deployYml));
+report("implw.yml: checkout steps set persist-credentials explicitly", checkCheckoutCredentialPersistence(implwYml));
+report("deploy.yml: checkout steps set persist-credentials explicitly", checkCheckoutCredentialPersistence(deployYml));
+report("implw.yml: trust-boundary guards present", checkTrustBoundaryGuards(implwYml));
 
 report("`.claude/settings.json`: no bypassPermissions or broad path grants", checkClaudeSettings(JSON.parse(read(".claude/settings.json"))));
 report(".gitignore: covers env/key/credential/state/db/log/agent-temp files", checkGitignore(read(".gitignore")));
@@ -214,6 +275,33 @@ report("fixture: hardened.json settings pass", checkClaudeSettings(hardenedSetti
 report(
   "fixture: insecure.json settings are flagged",
   checkClaudeSettings(insecureSettings).length === 0 ? ["expected violations, got none"] : [],
+);
+
+const pinnedActionsSnippet = read("test/fixtures/security/action-pinning/pinned.yml");
+const unpinnedActionsSnippet = read("test/fixtures/security/action-pinning/unpinned.yml");
+
+report("fixture: pinned.yml actions pass", checkActionPinning(pinnedActionsSnippet));
+report(
+  "fixture: unpinned.yml actions are flagged",
+  checkActionPinning(unpinnedActionsSnippet).length === 0 ? ["expected violations, got none"] : [],
+);
+
+const explicitPersistCredentials = read("test/fixtures/security/checkout-credentials/explicit.yml");
+const implicitPersistCredentials = read("test/fixtures/security/checkout-credentials/implicit.yml");
+
+report("fixture: explicit.yml persist-credentials passes", checkCheckoutCredentialPersistence(explicitPersistCredentials));
+report(
+  "fixture: implicit.yml persist-credentials is flagged",
+  checkCheckoutCredentialPersistence(implicitPersistCredentials).length === 0 ? ["expected violations, got none"] : [],
+);
+
+const hardenedTrustGuards = read("test/fixtures/security/trust-guards/hardened.yml");
+const regressedTrustGuards = read("test/fixtures/security/trust-guards/regressed.yml");
+
+report("fixture: hardened.yml trust guards pass", checkTrustBoundaryGuards(hardenedTrustGuards));
+report(
+  "fixture: regressed.yml trust guards are flagged",
+  checkTrustBoundaryGuards(regressedTrustGuards).length === 0 ? ["expected violations, got none"] : [],
 );
 
 // ---------------------------------------------------------------------------
