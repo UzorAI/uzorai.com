@@ -26,6 +26,15 @@ on:
         description: "Correlation token from trigger_implw (optional)"
         required: false
         type: string
+      model:
+        description: "Claude model for this implw run"
+        required: false
+        type: string
+        default: claude-sonnet-4-6
+      sparse_paths:
+        description: "Newline-separated repo-relative paths for sparse checkout. Leave empty for full checkout (default)."
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -44,7 +53,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          fetch-depth: 0
+          fetch-depth: ${{ inputs.sparse_paths != '' && 1 || 0 }}
+          sparse-checkout: ${{ inputs.sparse_paths }}
           # Do not leave a usable git credential helper behind in the
           # workspace once this job ends — the runner's checkout directory
           # is reused across runs (REFACTOR #83 D4: deterministic cleanup,
@@ -196,6 +206,7 @@ jobs:
           RUN_ID: ${{ github.run_id }}
           HEARTBEAT_INTERVAL_RAW: ${{ vars.IMPLW_HEARTBEAT_INTERVAL_SECONDS }}
           HEARTBEAT_STALL_WINDOW_RAW: ${{ vars.IMPLW_HEARTBEAT_STALL_WINDOW_SECONDS }}
+          CLAUDE_MODEL_INPUT: ${{ inputs.model }}
         # No GH_TOKEN env: claude inherits the self-hosted runner's persistent
         # `gh auth` (operator PAT), which is what enables `gh pr create` to
         # trigger downstream workflow_dispatch (GitHub anti-recursion bypasses
@@ -257,7 +268,7 @@ jobs:
           START_TS=$(date +%s)
           echo "::notice title=implw timeline::event=provider_started issue=$ISSUE_NUMBER provider=claude phase=implementation status=started elapsed_seconds=0 detail=running"
           set +e
-          timeout 20m claude --dangerously-skip-permissions --debug --verbose --output-format stream-json -p "/implw $SPEC_PATH" < /dev/null > "$RAW_LOG" 2>&1 &
+          timeout 20m claude --model "$CLAUDE_MODEL_INPUT" --dangerously-skip-permissions --debug --verbose --output-format stream-json -p "/implw $SPEC_PATH" < /dev/null > "$RAW_LOG" 2>&1 &
           PROVIDER_PID=$!
           ./scripts/implw-provider-heartbeat.sh "$PROVIDER_PID" claude "$RAW_LOG" "$HEARTBEAT_INTERVAL_SECONDS" "$HEARTBEAT_STALL_WINDOW_SECONDS" "$ISSUE_NUMBER" &
           HEARTBEAT_PID=$!
