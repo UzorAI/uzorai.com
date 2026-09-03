@@ -148,6 +148,15 @@ channel record.
 - Commit with the single required trailer `Co-authored-by: ZiLin
   <noreply@zzv.io>`. **Never** add a Claude / Anthropic / AI co-author.
 - Include the Path B materialized spec file in the diff (§4.4).
+- **Governed no-change result.** If, after inspection, the spec genuinely
+  requires no code change, do not fabricate a diff to satisfy the
+  completion-evidence gate. Instead write a JSON manifest —
+  `{"reason": "<why no change is needed>", "evidence": "<what you checked>"}`
+  — to the path in `$NO_CHANGE_MANIFEST_PATH` (set by the workflow) and skip
+  opening a PR. The post-run validator (`scripts/require-implw-completion-evidence.mjs`)
+  accepts this as the sole alternative to a verified pushed-commit-plus-PR
+  result; anything else — including a bare successful exit with neither — is
+  treated as missing evidence and fails the run.
 
 ### 6. Open the PR
 
