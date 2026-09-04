@@ -19,6 +19,7 @@ const en = require('../src/client/i18n/en.json')
 const es = require('../src/client/i18n/es.json')
 const ru = require('../src/client/i18n/ru.json')
 const zh = require('../src/client/i18n/zh.json')
+const ar = require('../src/client/i18n/ar.json')
 
 const pseudoLocale = require('./fixtures/i18n/pseudo-locale.json')
 const rtlFixture = require('./fixtures/i18n/rtl-fixture.json')
@@ -27,9 +28,10 @@ const metaEn = require('../src/client/i18n/meta/en.json')
 const metaEs = require('../src/client/i18n/meta/es.json')
 const metaRu = require('../src/client/i18n/meta/ru.json')
 const metaZh = require('../src/client/i18n/meta/zh.json')
+const metaAr = require('../src/client/i18n/meta/ar.json')
 
-const SHIPPED_LOCALES = { en, es, ru, zh }
-const META = { en: metaEn, es: metaEs, ru: metaRu, zh: metaZh }
+const SHIPPED_LOCALES = { en, es, ru, zh, ar }
+const META = { en: metaEn, es: metaEs, ru: metaRu, zh: metaZh, ar: metaAr }
 
 // ---------------------------------------------------------------------------
 // AC1 — Fallback order: active dict → en → key

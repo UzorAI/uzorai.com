@@ -3,13 +3,12 @@
  * ported from htu-foundation's config/languages.js (adapted to TypeScript).
  *
  * v1 ships en + es + ru + zh (the htu.io core set). `en` is canonical and is
- * the fallback dictionary. Arabic (`ar`, dir: 'rtl') is GATED on a separate
- * RTL review (EPIC #29): the provider and styles/rtl.css already honour `dir`,
- * so adding `ar` later is a dictionary + one-line metadata change, no rework.
+ * the fallback dictionary. Arabic (`ar`, dir: 'rtl') ships in Phase 2 of
+ * EPIC #108: the provider and styles/rtl.css already honour `dir`.
  */
 export type Dir = 'ltr' | 'rtl'
 
-export type LocaleCode = 'en' | 'es' | 'ru' | 'zh'
+export type LocaleCode = 'en' | 'es' | 'ru' | 'zh' | 'ar'
 
 export interface Language {
   code: LocaleCode
@@ -23,6 +22,7 @@ export const LANGUAGES: readonly Language[] = [
   { code: 'es', label: 'Español', dir: 'ltr' },
   { code: 'ru', label: 'Русский', dir: 'ltr' },
   { code: 'zh', label: '中文', dir: 'ltr' },
+  { code: 'ar', label: 'العربية', dir: 'rtl' },
 ] as const
 
 /** Canonical / fallback locale. `en` is the source dictionary. */
