@@ -20,6 +20,7 @@ const es = require('../src/client/i18n/es.json')
 const ru = require('../src/client/i18n/ru.json')
 const zh = require('../src/client/i18n/zh.json')
 const ar = require('../src/client/i18n/ar.json')
+const he = require('../src/client/i18n/he.json')
 
 const pseudoLocale = require('./fixtures/i18n/pseudo-locale.json')
 const rtlFixture = require('./fixtures/i18n/rtl-fixture.json')
@@ -29,15 +30,16 @@ const metaEs = require('../src/client/i18n/meta/es.json')
 const metaRu = require('../src/client/i18n/meta/ru.json')
 const metaZh = require('../src/client/i18n/meta/zh.json')
 const metaAr = require('../src/client/i18n/meta/ar.json')
+const metaHe = require('../src/client/i18n/meta/he.json')
 
-const SHIPPED_LOCALES = { en, es, ru, zh, ar }
-const META = { en: metaEn, es: metaEs, ru: metaRu, zh: metaZh, ar: metaAr }
+const SHIPPED_LOCALES = { en, es, ru, zh, ar, he }
+const META = { en: metaEn, es: metaEs, ru: metaRu, zh: metaZh, ar: metaAr, he: metaHe }
 
 // ---------------------------------------------------------------------------
 // AC1 — Fallback order: active dict → en → key
 // ---------------------------------------------------------------------------
 
-test('AC1: t() fallback order — active dict → en → key, for all 4 locales', () => {
+test('AC1: t() fallback order — active dict → en → key, for every shipped locale', () => {
   for (const [code, dict] of Object.entries(SHIPPED_LOCALES)) {
     // Tier 1: key present in active dict resolves from active dict
     const keyInAll = 'nav.home'
@@ -136,7 +138,7 @@ test('AC4 (mobile): nav labels are ≤ 20 characters in all locales', () => {
 // AC2 — Metadata: meta files cover every key in the corresponding locale dict
 // ---------------------------------------------------------------------------
 
-test('AC2: meta files cover every dict key for en/es/ru/zh', () => {
+test('AC2: meta files cover every dict key for every shipped locale', () => {
   const META_RESERVED = new Set(['_schema', '_note'])
   for (const [code, dict] of Object.entries(SHIPPED_LOCALES)) {
     const meta = META[code]
