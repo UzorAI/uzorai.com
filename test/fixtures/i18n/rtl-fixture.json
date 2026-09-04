@@ -1,0 +1,25 @@
+{
+  "_meta": {
+    "purpose": "RTL locale fixture stub for EPIC #108 Phase 2 (ar) and Phase 3 (he). Documents the metadata shape a new RTL locale must supply in languages.ts and the minimum key set for the hero/nav surfaces.",
+    "reuse": "Phase 2 (ar): add { code: 'ar', label: 'العربية', dir: 'rtl' } to src/client/config/languages.ts; add a full ar.json using this stub as the nav/hero template. The styles/rtl.css file already handles [dir='rtl'] layout flips via LocaleProvider.",
+    "note": "Sample strings are illustrative Arabic. Phase 2 implementers should have the full dictionary professionally reviewed before shipping."
+  },
+  "_locale": {
+    "code": "ar",
+    "dir": "rtl",
+    "label": "العربية"
+  },
+  "nav.home": "الرئيسية",
+  "nav.platform": "المنصة",
+  "nav.governance": "الحوكمة",
+  "nav.docs": "المستندات",
+  "nav.pricing": "الأسعار",
+  "nav.contact": "اتصل بنا",
+  "header.tagline": "يُنسِّق. يَحكُم. يُنفِّذ.",
+  "picker.label": "اللغة",
+  "home.hero.headline.1": "يُنسِّق.",
+  "home.hero.headline.2": "يَحكُم.",
+  "home.hero.headline.3": "يُنفِّذ.",
+  "home.hero.subhead": "تنسيق ذكاء اصطناعي مُدار للوكلاء والأدوات وسير العمل على مستوى المؤسسات — مستوى تحكم واحد مُنسَّق، قابل للتدقيق من البداية إلى النهاية.",
+  "footer.back": "رجوع"
+}
