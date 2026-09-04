@@ -1,8 +1,8 @@
 /*
  * RTL flips — applied only when the LocaleProvider sets dir="rtl" on <html>
- * (e.g. a future Arabic locale; ar is gated on an RTL review, EPIC #29).
+ * (currently Arabic and Hebrew).
  * Safe to load globally: every rule is scoped under [dir="rtl"], so it is
- * inert for the LTR locales shipped in v1 (en/es/ru/zh).
+ * inert for LTR locales.
  *
  * Logical properties (margin-inline, padding-inline, inset-inline) already
  * mirror automatically under dir="rtl"; these rules cover the few physical

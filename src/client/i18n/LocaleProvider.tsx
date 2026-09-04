@@ -62,7 +62,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   }, [])
 
   // Apply <html lang/dir> and lazily load the active dictionary. RTL locales
-  // (e.g. a future `ar`) flip the document direction; styles/rtl.css handles
+  // (`ar` and `he`) flip the document direction; styles/rtl.css handles
   // the visual flips under [dir="rtl"].
   useEffect(() => {
     document.documentElement.lang = locale
