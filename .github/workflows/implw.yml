@@ -26,11 +26,23 @@ on:
         description: "Correlation token from trigger_implw (optional)"
         required: false
         type: string
+      provider:
+        description: "Execution provider"
+        required: false
+        type: choice
+        options:
+          - claude
+          - codex
+        default: claude
       model:
         description: "Claude model for this implw run"
         required: false
         type: string
         default: claude-sonnet-4-6
+      codex_model:
+        description: "Optional Codex model override; empty uses the runner default"
+        required: false
+        type: string
       sparse_paths:
         description: "Newline-separated repo-relative paths for sparse checkout. Leave empty for full checkout (default)."
         required: false
@@ -205,6 +217,7 @@ jobs:
 
       - name: Run implw via claude (subscription mode)
         id: claude_run
+        if: inputs.provider == 'claude'
         timeout-minutes: 22
         env:
           SPEC_PATH: ${{ steps.verify_issue.outputs.spec_path }}
@@ -301,6 +314,99 @@ jobs:
           echo "claude_exit=$CLAUDE_EXIT" >> "$GITHUB_OUTPUT"
           exit "$CLAUDE_EXIT"
 
+      - name: Run implw via Codex (subscription mode)
+        id: codex_run
+        if: inputs.provider == 'codex'
+        timeout-minutes: 22
+        env:
+          SPEC_PATH: ${{ steps.verify_issue.outputs.spec_path }}
+          ISSUE_NUMBER: ${{ steps.validate.outputs.issue_number }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          HEARTBEAT_INTERVAL_RAW: ${{ vars.IMPLW_HEARTBEAT_INTERVAL_SECONDS }}
+          HEARTBEAT_STALL_WINDOW_RAW: ${{ vars.IMPLW_HEARTBEAT_STALL_WINDOW_SECONDS }}
+          CODEX_MODEL_INPUT: ${{ inputs.codex_model }}
+          NO_CHANGE_MANIFEST_PATH: ${{ steps.prepare_manifest.outputs.no_change_manifest_path }}
+        # Like the Claude step, Codex intentionally inherits the runner's
+        # human-managed provider session and gh authentication. No credential
+        # value is read, printed, persisted, or uploaded by this workflow.
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.npm-global/bin:$PATH"
+          if ! command -v codex >/dev/null; then
+            echo "codex_exit=127" >> "$GITHUB_OUTPUT"
+            echo "::error::codex not found on PATH"
+            exit 127
+          fi
+          set +e
+          AUTH_DETAIL="$(./scripts/codex-auth-preflight.sh)"
+          AUTH_EXIT=$?
+          set -e
+          if [ "$AUTH_EXIT" != 0 ]; then
+            echo "codex_exit=127" >> "$GITHUB_OUTPUT"
+            echo "::error::${AUTH_DETAIL:-codex auth preflight failed}"
+            exit 127
+          fi
+
+          RAW_CAPTURE="$(mktemp -t "implw-codex-${ISSUE_NUMBER}-XXXX.jsonl")"
+          TELEMETRY_PATH=".implw/telemetry/codex-${RUN_ID}-first.json"
+          HEARTBEAT_INTERVAL_SECONDS="${HEARTBEAT_INTERVAL_RAW:-60}"
+          HEARTBEAT_STALL_WINDOW_SECONDS="${HEARTBEAT_STALL_WINDOW_RAW:-120}"
+          HEARTBEAT_PID=""
+          stop_heartbeat() {
+            if [ -n "$HEARTBEAT_PID" ]; then
+              kill "$HEARTBEAT_PID" 2>/dev/null || true
+              wait "$HEARTBEAT_PID" 2>/dev/null || true
+              HEARTBEAT_PID=""
+            fi
+          }
+          cleanup_runtime() {
+            stop_heartbeat
+            rm -f "$RAW_CAPTURE"
+          }
+          trap cleanup_runtime EXIT INT TERM
+
+          CODEX_PROMPT="$(printf '%s\n' \
+            "Read .claude/commands/implw.md in full and follow its governed procedure for the scored issue spec at $SPEC_PATH." \
+            "Repository: $REPOSITORY" \
+            "Issue: #$ISSUE_NUMBER" \
+            "The workflow has exported NO_CHANGE_MANIFEST_PATH. If the spec genuinely requires no change, write the required reason/evidence JSON manifest there. Otherwise complete the command through branch push and PR creation. Do not deploy.")"
+          CODEX_ARGS=(exec --json --ephemeral --sandbox workspace-write \
+            -c shell_environment_policy.inherit=all \
+            -c sandbox_workspace_write.network_access=true)
+          if [ -n "$CODEX_MODEL_INPUT" ]; then
+            CODEX_ARGS+=(--model "$CODEX_MODEL_INPUT")
+          fi
+
+          START_TS="$(date +%s)"
+          STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          echo "::notice title=implw timeline::event=provider_started issue=$ISSUE_NUMBER provider=codex phase=implementation status=started elapsed_seconds=0 detail=running"
+          set +e
+          timeout 20m codex "${CODEX_ARGS[@]}" "$CODEX_PROMPT" < /dev/null > "$RAW_CAPTURE" 2>&1 &
+          PROVIDER_PID=$!
+          ./scripts/implw-provider-heartbeat.sh "$PROVIDER_PID" codex "$RAW_CAPTURE" "$HEARTBEAT_INTERVAL_SECONDS" "$HEARTBEAT_STALL_WINDOW_SECONDS" "$ISSUE_NUMBER" &
+          HEARTBEAT_PID=$!
+          wait "$PROVIDER_PID"
+          CODEX_EXIT=$?
+          stop_heartbeat
+          set -e
+          ELAPSED=$(( $(date +%s) - START_TS ))
+          COMPLETED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          if [ "$CODEX_EXIT" = 0 ]; then PROVIDER_STATUS=success; else PROVIDER_STATUS=failed; fi
+          echo "implw_provider_heartbeat provider=codex issue=$ISSUE_NUMBER status=completed provider_exit=$CODEX_EXIT elapsed_seconds=$ELAPSED"
+          echo "::notice title=implw timeline::event=provider_completed issue=$ISSUE_NUMBER provider=codex phase=implementation status=$PROVIDER_STATUS elapsed_seconds=$ELAPSED detail=exit_$CODEX_EXIT"
+
+          if ./scripts/implw-codex-telemetry.sh "$RAW_CAPTURE" "$TELEMETRY_PATH" "$REPOSITORY" "$RUN_ID" "$ISSUE_NUMBER" "$CODEX_EXIT" "$CODEX_MODEL_INPUT" "$STARTED_AT" "$COMPLETED_AT" "$((ELAPSED * 1000))"; then
+            echo "telemetry_path=$TELEMETRY_PATH" >> "$GITHUB_OUTPUT"
+            jq -c . "$TELEMETRY_PATH" | sed 's/^/implw_codex_telemetry=/'
+          else
+            echo "::warning title=implw Codex telemetry::usage extraction failed; provider outcome is unchanged"
+          fi
+          rm -f "$RAW_CAPTURE"
+          trap - EXIT INT TERM
+          echo "codex_exit=$CODEX_EXIT" >> "$GITHUB_OUTPUT"
+          exit "$CODEX_EXIT"
+
       - name: Validate completion evidence
         id: completion_evidence
         env:
@@ -308,6 +414,8 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           ISSUE_NUMBER: ${{ steps.validate.outputs.issue_number }}
           NO_CHANGE_MANIFEST_PATH: ${{ steps.prepare_manifest.outputs.no_change_manifest_path }}
+          REQUESTED_PROVIDER: ${{ inputs.provider }}
+          RESOLVED_PROVIDER: ${{ inputs.provider }}
         run: |
           set -euo pipefail
           export PATH="$HOME/.npm-global/bin:$PATH"
@@ -324,6 +432,15 @@ jobs:
             ${{ steps.claude_run.outputs.diagnostic_path }}
           if-no-files-found: warn
 
+      - name: Upload Codex usage telemetry
+        if: always() && steps.codex_run.outputs.telemetry_path != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: codex-usage-${{ github.run_id }}-first
+          path: ${{ steps.codex_run.outputs.telemetry_path }}
+          if-no-files-found: warn
+
       - name: Cleanup spec tmp file
         if: always()
         env:
@@ -337,7 +454,9 @@ jobs:
           # always valid. Scoping per REFACTOR htu-foundation#192 keeps the
           # failure-reporting path from itself failing on a stale PAT.
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROVIDER: ${{ inputs.provider }}
           CLAUDE_EXIT: ${{ steps.claude_run.outputs.claude_exit }}
+          CODEX_EXIT: ${{ steps.codex_run.outputs.codex_exit }}
           ISSUE_NUMBER: ${{ steps.validate.outputs.issue_number }}
           REPO: ${{ github.repository }}
           COMPLETION_OK: ${{ steps.completion_evidence.outputs.completion_ok }}
@@ -345,12 +464,14 @@ jobs:
           COMPLETION_REASON: ${{ steps.completion_evidence.outputs.completion_reason }}
         run: |
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          if [ "${CLAUDE_EXIT:-}" = "124" ]; then
-            BODY="implw hit timeout (exit 124) — investigate runner state and claude CLI auth. Logs: $RUN_URL"
+          PROVIDER_EXIT="$CLAUDE_EXIT"
+          if [ "$PROVIDER" = "codex" ]; then PROVIDER_EXIT="$CODEX_EXIT"; fi
+          if [ "${PROVIDER_EXIT:-}" = "124" ]; then
+            BODY="implw $PROVIDER hit timeout (exit 124) — investigate runner state and provider auth. Logs: $RUN_URL"
           elif [ "${COMPLETION_OK:-}" = "false" ]; then
-            BODY="implw completion evidence gate failed (${COMPLETION_CLASSIFICATION:-missing_completion_evidence}): ${COMPLETION_REASON:-no evidence found}. Logs: $RUN_URL"
+            BODY="implw $PROVIDER completion evidence gate failed (${COMPLETION_CLASSIFICATION:-missing_completion_evidence}): ${COMPLETION_REASON:-no evidence found}. Logs: $RUN_URL"
           else
-            BODY="implw run failed (exit ${CLAUDE_EXIT:-unknown}) — see logs: $RUN_URL"
+            BODY="implw $PROVIDER run failed (exit ${PROVIDER_EXIT:-unknown}) — see logs: $RUN_URL"
           fi
           gh issue comment "$ISSUE_NUMBER" \
             --repo "$REPO" \
