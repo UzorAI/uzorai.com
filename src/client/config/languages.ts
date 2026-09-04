@@ -8,7 +8,7 @@
  */
 export type Dir = 'ltr' | 'rtl'
 
-export type LocaleCode = 'en' | 'es' | 'ru' | 'zh' | 'ar'
+export type LocaleCode = 'en' | 'es' | 'ru' | 'zh' | 'ar' | 'fr'
 
 export interface Language {
   code: LocaleCode
@@ -23,6 +23,7 @@ export const LANGUAGES: readonly Language[] = [
   { code: 'ru', label: 'Русский', dir: 'ltr' },
   { code: 'zh', label: '中文', dir: 'ltr' },
   { code: 'ar', label: 'العربية', dir: 'rtl' },
+  { code: 'fr', label: 'Français', dir: 'ltr' },
 ] as const
 
 /** Canonical / fallback locale. `en` is the source dictionary. */
