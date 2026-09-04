@@ -196,6 +196,13 @@ jobs:
             exit 1
           fi
 
+      - name: Prepare completion-evidence manifest path
+        id: prepare_manifest
+        run: |
+          set -euo pipefail
+          NO_CHANGE_MANIFEST_PATH="$(mktemp -t "implw-no-change-XXXX.json")"
+          echo "no_change_manifest_path=$NO_CHANGE_MANIFEST_PATH" >> "$GITHUB_OUTPUT"
+
       - name: Run implw via claude (subscription mode)
         id: claude_run
         timeout-minutes: 22
@@ -207,6 +214,7 @@ jobs:
           HEARTBEAT_INTERVAL_RAW: ${{ vars.IMPLW_HEARTBEAT_INTERVAL_SECONDS }}
           HEARTBEAT_STALL_WINDOW_RAW: ${{ vars.IMPLW_HEARTBEAT_STALL_WINDOW_SECONDS }}
           CLAUDE_MODEL_INPUT: ${{ inputs.model }}
+          NO_CHANGE_MANIFEST_PATH: ${{ steps.prepare_manifest.outputs.no_change_manifest_path }}
         # No GH_TOKEN env: claude inherits the self-hosted runner's persistent
         # `gh auth` (operator PAT), which is what enables `gh pr create` to
         # trigger downstream workflow_dispatch (GitHub anti-recursion bypasses
@@ -293,6 +301,18 @@ jobs:
           echo "claude_exit=$CLAUDE_EXIT" >> "$GITHUB_OUTPUT"
           exit "$CLAUDE_EXIT"
 
+      - name: Validate completion evidence
+        id: completion_evidence
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ steps.validate.outputs.issue_number }}
+          NO_CHANGE_MANIFEST_PATH: ${{ steps.prepare_manifest.outputs.no_change_manifest_path }}
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.npm-global/bin:$PATH"
+          node scripts/require-implw-completion-evidence.mjs
+
       - name: Upload Claude usage telemetry
         if: always() && steps.claude_run.outputs.telemetry_path != ''
         continue-on-error: true
@@ -320,10 +340,15 @@ jobs:
           CLAUDE_EXIT: ${{ steps.claude_run.outputs.claude_exit }}
           ISSUE_NUMBER: ${{ steps.validate.outputs.issue_number }}
           REPO: ${{ github.repository }}
+          COMPLETION_OK: ${{ steps.completion_evidence.outputs.completion_ok }}
+          COMPLETION_CLASSIFICATION: ${{ steps.completion_evidence.outputs.completion_classification }}
+          COMPLETION_REASON: ${{ steps.completion_evidence.outputs.completion_reason }}
         run: |
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           if [ "${CLAUDE_EXIT:-}" = "124" ]; then
             BODY="implw hit timeout (exit 124) — investigate runner state and claude CLI auth. Logs: $RUN_URL"
+          elif [ "${COMPLETION_OK:-}" = "false" ]; then
+            BODY="implw completion evidence gate failed (${COMPLETION_CLASSIFICATION:-missing_completion_evidence}): ${COMPLETION_REASON:-no evidence found}. Logs: $RUN_URL"
           else
             BODY="implw run failed (exit ${CLAUDE_EXIT:-unknown}) — see logs: $RUN_URL"
           fi
