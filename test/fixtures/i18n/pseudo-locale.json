@@ -1,0 +1,26 @@
+{
+  "_meta": {
+    "purpose": "Pseudo-locale fixture for i18n rendering tests (EPIC #108 Phase 2+). Provides bracket-wrapped, accent-augmented strings to catch untranslated copy and verify the UI handles non-ASCII characters and typical 30% string-expansion from English.",
+    "transform": "en strings bracket-wrapped and consonants accented — visually distinct, same semantic shape",
+    "reuse": "Phase 2+ implementers: import this dict as a synthetic active locale in unit/integration tests to verify LocaleProvider.t() and all render paths handle non-ASCII input without truncation or layout breakage.",
+    "note": "Not a full locale dict — covers the keys most likely to cause layout or rendering issues. Extend as needed for Phase 2 (ar) work."
+  },
+  "nav.home": "[Ȟőmé]",
+  "nav.platform": "[Płàtfőřm]",
+  "nav.governance": "[Ğővéřñàñcé]",
+  "nav.docs": "[Đőcs]",
+  "nav.pricing": "[Přícíñğ]",
+  "nav.contact": "[Cőñtàct]",
+  "header.tagline": "[Öřchéstřàté. Ğővéřñ. Éxécůté.]",
+  "picker.label": "[Łàñğůàğé]",
+  "home.hero.headline.1": "[Öřchéstřàté.]",
+  "home.hero.headline.2": "[Ğővéřñ.]",
+  "home.hero.headline.3": "[Éxécůté.]",
+  "home.hero.subhead": "[Ğővéřñéd ÀÍ őřchéstřàtíőñ főř éñtéřpřísé àğéñts, tőőłs, àñd wőřkfłőws — őñé wővéñ cőñtřőł płàñé, àůdítàbłé éñd tő éñd.]",
+  "home.cta.demo": "[Řéqůést démő]",
+  "home.cta.docs": "[Řéàd thé dőcs]",
+  "platform.title": "[Płàtfőřm]",
+  "platform.tagline": "[Thé wővéñ cőñtřőł płàñé]",
+  "footer.tagline": "[ŮŻŐŘ — thé pàttéřñ béñéàth őřchéstřàtíőñ, ğővéřñàñcé, àñd éxécůtíőñ.]",
+  "footer.back": "[Bàck]"
+}
