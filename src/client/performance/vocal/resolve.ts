@@ -18,6 +18,7 @@ import {
 } from './schema'
 
 const DEFAULT_LOCALE: VocalLocale = 'en'
+const CAPTION_ONLY_FALLBACK: VocalDiagnosticCode = 'caption-only-fallback'
 
 function captionFor(cue: VocalCue, locale: VocalLocale): VocalCaption {
   const match = cue.captions.find(c => c.locale === locale)
@@ -71,7 +72,7 @@ export function resolveVocalCue(
       clockSlot: cue.clockSlot,
       caption: resolvedCaption,
       locale: resolvedLocale,
-      diagnostics: Object.freeze([...diagnostics, 'caption-only-fallback' as const]),
+      diagnostics: Object.freeze([...diagnostics, CAPTION_ONLY_FALLBACK]),
     })
     return plan
   }
