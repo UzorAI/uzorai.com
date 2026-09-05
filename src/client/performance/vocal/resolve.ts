@@ -71,7 +71,7 @@ export function resolveVocalCue(
       clockSlot: cue.clockSlot,
       caption: resolvedCaption,
       locale: resolvedLocale,
-      diagnostics: Object.freeze([...diagnostics, 'caption-only-fallback']),
+      diagnostics: Object.freeze([...diagnostics, 'caption-only-fallback' as const]),
     })
     return plan
   }
