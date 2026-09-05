@@ -188,13 +188,28 @@ test('baseline uses existing repository tokens and provenance, with no media or 
 })
 
 test('existing UI has no imports of the foundation modules', () => {
+  // Sanctioned non-rendered foundation modules may import experience-packs for version-pinning.
+  // vocal/schema.ts is allowlisted here; its own rendered-consumer guard lives in vocal-performance-foundation.test.mjs.
+  const SANCTIONED_NON_RENDERED = ['src/client/performance/vocal/']
   function visit(path) {
     for (const entry of readdirSync(new URL(path, root), { withFileTypes: true })) {
       const name = join(path, entry.name)
       if (name === 'src/client/experience-packs') continue
       if (entry.isDirectory()) visit(name)
-      else if (/\.[jt]sx?$/.test(name)) assert.doesNotMatch(source(name), /(?:from\s*|import\s*\()['"][^'"]*experience-packs/)
+      else if (/\.[jt]sx?$/.test(name)) {
+        if (SANCTIONED_NON_RENDERED.some(prefix => name.startsWith(prefix))) continue
+        assert.doesNotMatch(source(name), /(?:from\s*|import\s*\()['"][^'"]*experience-packs/)
+      }
     }
   }
   visit('src/client')
+})
+
+test('guard still rejects rendered-route imports of experience-packs', () => {
+  const SANCTIONED_NON_RENDERED = ['src/client/performance/vocal/']
+  const guardRegex = /(?:from\s*|import\s*\()['"][^'"]*experience-packs/
+  const routePath = 'src/client/routes/SomeRoute.tsx'
+  const syntheticSource = `import { COMPATIBILITY } from '../experience-packs/schema'`
+  assert.ok(!SANCTIONED_NON_RENDERED.some(prefix => routePath.startsWith(prefix)))
+  assert.match(syntheticSource, guardRegex)
 })
