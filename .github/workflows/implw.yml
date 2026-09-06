@@ -309,6 +309,22 @@ jobs:
           else
             echo "::warning title=implw Claude telemetry::usage extraction failed; provider outcome is unchanged"
           fi
+          # Generate redacted transcript tail before discarding RAW_LOG so that a
+          # completion-evidence failure can attach readable diagnostics (BUG #133 AC2).
+          # Extracts the last ~64 KB of assistant/user text turns and redacts
+          # well-known secret patterns (GH tokens, Anthropic API keys).
+          TRANSCRIPT_TAIL_PATH="$(mktemp -t "implw-transcript-tail-${ISSUE_NUMBER}-XXXX.txt")"
+          jq -Rrc 'fromjson? | select(type == "object") |
+            select(.type == "assistant" or .type == "user") |
+            (.type + ": ") + ([ (.message.content // [])[] | select(.type == "text") | .text ] | join(""))
+          ' "$RAW_LOG" 2>/dev/null \
+            | tail -c 65536 \
+            | sed -E \
+                -e 's/ghp_[A-Za-z0-9]{36}/[GH_TOKEN_REDACTED]/g' \
+                -e 's/ghs_[A-Za-z0-9]{36,}/[GH_TOKEN_REDACTED]/g' \
+                -e 's/sk-ant-[A-Za-z0-9_-]{40,}/[ANTHROPIC_KEY_REDACTED]/g' \
+            > "$TRANSCRIPT_TAIL_PATH" 2>/dev/null || true
+          echo "transcript_tail_path=$TRANSCRIPT_TAIL_PATH" >> "$GITHUB_OUTPUT"
           rm -f "$RAW_LOG"
           trap - EXIT INT TERM
           echo "claude_exit=$CLAUDE_EXIT" >> "$GITHUB_OUTPUT"
@@ -430,6 +446,15 @@ jobs:
           path: |
             ${{ steps.claude_run.outputs.telemetry_path }}
             ${{ steps.claude_run.outputs.diagnostic_path }}
+          if-no-files-found: warn
+
+      - name: Upload transcript tail on completion-evidence failure
+        if: failure() && steps.completion_evidence.outcome == 'failure' && steps.claude_run.outputs.transcript_tail_path != ''
+        continue-on-error: true
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: claude-transcript-tail-${{ github.run_id }}
+          path: ${{ steps.claude_run.outputs.transcript_tail_path }}
           if-no-files-found: warn
 
       - name: Upload Codex usage telemetry

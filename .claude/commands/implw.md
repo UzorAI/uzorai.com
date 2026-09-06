@@ -157,6 +157,16 @@ channel record.
   accepts this as the sole alternative to a verified pushed-commit-plus-PR
   result; anything else — including a bare successful exit with neither — is
   treated as missing evidence and fails the run.
+- **Always-finalize (last resort).** If the procedure reaches the end of
+  Step 6 without having opened a PR — for any reason, including an
+  unresolvable spec, contradictory acceptance criteria, inability to
+  determine what code change is needed, or any unexpected error — you
+  **must** write the no-change manifest to `$NO_CHANGE_MANIFEST_PATH`
+  before your final turn ends. Use whatever reason is true at that point,
+  e.g. `{"reason": "agent could not resolve this spec into an implementation
+  plan", "evidence": "<what you inspected>"}`. Letting the turn loop end
+  without either a pushed PR or a written manifest is not a governed outcome
+  and will fail the completion-evidence gate.
 
 ### 6. Open the PR
 
