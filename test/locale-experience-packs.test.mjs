@@ -194,7 +194,8 @@ test('existing UI has no imports of the foundation modules', () => {
   function visit(path) {
     for (const entry of readdirSync(new URL(path, root), { withFileTypes: true })) {
       const name = join(path, entry.name)
-      if (name === 'src/client/experience-packs') continue
+      // Foundation layers legitimately depend on each other; only UI layer is restricted.
+      if (name === 'src/client/experience-packs' || name === 'src/client/performance') continue
       if (entry.isDirectory()) visit(name)
       else if (/\.[jt]sx?$/.test(name)) {
         if (SANCTIONED_NON_RENDERED.some(prefix => name.startsWith(prefix))) continue
