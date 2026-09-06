@@ -316,7 +316,7 @@ jobs:
           TRANSCRIPT_TAIL_PATH="$(mktemp -t "implw-transcript-tail-${ISSUE_NUMBER}-XXXX.txt")"
           jq -Rrc 'fromjson? | select(type == "object") |
             select(.type == "assistant" or .type == "user") |
-            (.type + ": ") + ([ (.content // [])[] | select(.type == "text") | .text ] | join(""))
+            (.type + ": ") + ([ (.message.content // [])[] | select(.type == "text") | .text ] | join(""))
           ' "$RAW_LOG" 2>/dev/null \
             | tail -c 65536 \
             | sed -E \
