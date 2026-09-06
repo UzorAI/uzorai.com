@@ -501,3 +501,30 @@ jobs:
           gh issue comment "$ISSUE_NUMBER" \
             --repo "$REPO" \
             --body "$BODY"
+
+      - name: Comment no-change completion on issue
+        if: steps.completion_evidence.outputs.completion_classification == 'no_change_verified'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ steps.validate.outputs.issue_number }}
+          REPO: ${{ github.repository }}
+          NO_CHANGE_MANIFEST_PATH: ${{ steps.prepare_manifest.outputs.no_change_manifest_path }}
+        run: |
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          if [ -s "$NO_CHANGE_MANIFEST_PATH" ]; then
+            REASON="$(jq -r '.reason // "(no reason recorded)"' "$NO_CHANGE_MANIFEST_PATH")"
+            EVIDENCE="$(jq -r '.evidence // "(no evidence recorded)"' "$NO_CHANGE_MANIFEST_PATH")"
+          else
+            REASON="(manifest not available)"
+            EVIDENCE="(manifest not available)"
+          fi
+          gh issue comment "$ISSUE_NUMBER" \
+            --repo "$REPO" \
+            --body "implw completed — no change needed.
+
+**Reason:** $REASON
+
+**Evidence:** $EVIDENCE
+
+Run: $RUN_URL"
