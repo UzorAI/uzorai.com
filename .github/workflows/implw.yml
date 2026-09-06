@@ -519,12 +519,7 @@ jobs:
             REASON="(manifest not available)"
             EVIDENCE="(manifest not available)"
           fi
+          BODY="$(printf 'implw completed — no change needed.\n\n**Reason:** %s\n\n**Evidence:** %s\n\nRun: %s' "$REASON" "$EVIDENCE" "$RUN_URL")"
           gh issue comment "$ISSUE_NUMBER" \
             --repo "$REPO" \
-            --body "implw completed — no change needed.
-
-**Reason:** $REASON
-
-**Evidence:** $EVIDENCE
-
-Run: $RUN_URL"
+            --body "$BODY"
