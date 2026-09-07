@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect, type Page, type Route } from '@playwright/test'
 import { readFileSync } from 'node:fs'
 import { latinExceptions } from '../helpers/hebrew-allowlist.mjs'
 
@@ -49,6 +49,18 @@ async function closeDrawer(page: Page, width: number) {
   if (width < 1100) await page.keyboard.press('Escape')
 }
 
+async function fulfillFromPreview(route: Route, url: URL) {
+  const response = await route.fetch({url: `http://127.0.0.1:4173${url.pathname}${url.search}`})
+  // Materialize the response before fulfilling the intercepted request. Passing
+  // the Response object directly can race with Playwright disposing it while
+  // parallel navigation requests are still settling.
+  await route.fulfill({
+    status: response.status(),
+    headers: response.headers(),
+    body: await response.body(),
+  })
+}
+
 for (const host of ['uzorai.com', 'uzor.ai']) {
   for (const width of [1440, 900, 390, 320]) {
     test(`${host} Hebrew routes and interactions at ${width}px`, async ({page, context}) => {
@@ -62,8 +74,7 @@ for (const host of ['uzorai.com', 'uzor.ai']) {
       await page.route('**/*', async route => {
         const url = new URL(route.request().url())
         if (url.hostname !== host) return route.abort()
-        const response = await route.fetch({url: `http://127.0.0.1:4173${url.pathname}${url.search}`})
-        await route.fulfill({response})
+        await fulfillFromPreview(route, url)
       })
       for (const path of routes) {
         await page.goto(`https://${host}${path}`)
@@ -145,8 +156,7 @@ test('Hebrew navigator preference renders without a lazy dictionary or English f
     const url = new URL(route.request().url())
     requests.push(url.pathname)
     if (url.hostname !== 'uzorai.com') return route.abort()
-    const response = await route.fetch({url: `http://127.0.0.1:4173${url.pathname}`})
-    await route.fulfill({response})
+    await fulfillFromPreview(route, url)
   })
   await page.goto('https://uzorai.com/')
   await expect(page.getByRole('heading', {name: he['home.engine.heading'], exact: true})).toBeVisible()
