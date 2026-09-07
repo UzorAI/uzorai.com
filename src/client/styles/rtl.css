@@ -24,3 +24,14 @@
 [dir='rtl'] select {
   text-align: right;
 }
+
+/*
+ * Hebrew webfont scope — applies only when LocaleProvider sets lang="he" on
+ * <html>. Overrides --font-sans so the existing `body { font-family:
+ * var(--font-sans) }` rule in tokens.css automatically picks up Heebo.
+ * The Hebrew-subset @font-face loaded in fonts.css has no Latin glyphs, so
+ * Latin brand elements ("UzorAI", "UZOR GO") fall through to Inter naturally.
+ */
+html[lang='he'] {
+  --font-sans: 'Heebo', 'Rubik', 'Assistant', 'Inter', system-ui, -apple-system, sans-serif;
+}

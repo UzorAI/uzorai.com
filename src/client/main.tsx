@@ -5,6 +5,7 @@ import App from './App'
 import { LocaleProvider } from './i18n/LocaleProvider'
 import { ThemeProvider } from './theme/ThemeProvider'
 import './brand/tokens.css'
+import './styles/fonts.css'
 import './styles/rtl.css'
 
 const rootEl = document.getElementById('root')

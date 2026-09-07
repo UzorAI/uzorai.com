@@ -1,0 +1,11 @@
+/*
+ * Hebrew webfont — Heebo (Hebrew subset) via @fontsource/heebo.
+ * Self-hosted to satisfy CSP font-src 'self'. Weights loaded match the
+ * weights used in Hebrew-locale nav (500), body (400), hero sub-headings (600),
+ * and hero heading (800) — no synthetic bold for any Hebrew text element.
+ * font-display: swap is declared inside each imported @font-face rule.
+ */
+@import '@fontsource/heebo/hebrew-400.css';
+@import '@fontsource/heebo/hebrew-500.css';
+@import '@fontsource/heebo/hebrew-600.css';
+@import '@fontsource/heebo/hebrew-800.css';
