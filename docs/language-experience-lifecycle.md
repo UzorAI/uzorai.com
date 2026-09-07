@@ -57,6 +57,9 @@ node scripts/language-impact-report.mjs \
 The `Language browser audit` workflow runs this report automatically for pull
 requests and pushes to `main`. It uploads `language-impact/report.json` and
 `language-impact/report.md` in the `language-localization-evidence` artifact.
+The end-of-commit procedure, manual workflow trigger, evidence download, and
+PR checklist are documented in
+[`docs/language-browser-audit.md`](language-browser-audit.md).
 
 To download evidence from a completed run:
 
