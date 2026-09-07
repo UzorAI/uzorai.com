@@ -1,0 +1,16 @@
+title = "UzorAI/uzorai.com secret-scanning configuration"
+
+[extend]
+# Inherit the full Gitleaks default rule set.
+# Run via: gitleaks detect --source . --config .gitleaks.toml --redact
+# The --redact flag suppresses secret values from all output (pass it on the CLI or via the CI action).
+useDefault = true
+
+# Allowlist regression fixtures that intentionally contain mock values.
+# These entries prove the scanner's detectors fire on the mock patterns;
+# the allowlist prevents them from producing alerts on obviously-fake values.
+[[allowlists]]
+description = "Gitleaks regression fixtures — mock values for scanner validation only, never deployed"
+paths = [
+  '''test/fixtures/security/gitleaks/''',
+]
