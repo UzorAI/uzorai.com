@@ -120,5 +120,8 @@
   "notFound.title": {"v": "1.0", "reviewed": "2026-09-07", "pending": true},
   "notFound.body": {"v": "1.0", "reviewed": "2026-09-07", "pending": true},
   "notFound.back": {"v": "1.0", "reviewed": "2026-09-07", "pending": true},
-  "contact.subject": {"v": "1.0", "reviewed": "2026-09-07", "pending": true}
+  "contact.subject": {"v": "1.0", "reviewed": "2026-09-07", "pending": true},
+  "settings.share": {"v": "1.0", "reviewed": "2026-09-07"},
+  "settings.shared": {"v": "1.0", "reviewed": "2026-09-07"},
+  "settings.shareFailed": {"v": "1.0", "reviewed": "2026-09-07"}
 }

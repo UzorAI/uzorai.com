@@ -118,5 +118,8 @@
   "notFound.title": "Page not found",
   "notFound.body": "The requested page could not be found.",
   "notFound.back": "Return home",
-  "contact.subject": "UzorAI demo request"
+  "contact.subject": "UzorAI demo request",
+  "settings.share": "Compartir configuración",
+  "settings.shared": "Enlace de configuración copiado",
+  "settings.shareFailed": "No se pudo compartir"
 }

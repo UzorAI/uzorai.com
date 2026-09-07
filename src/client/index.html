@@ -51,7 +51,9 @@
     <script>
       (function () {
         try {
-          var t = localStorage.getItem('uzor-theme');
+          var params = new URLSearchParams(location.search);
+          var sharedTheme = params.get('uzor_theme');
+          var t = sharedTheme || localStorage.getItem('uzor-theme');
           if (t !== 'light' && t !== 'dark') {
             t =
               window.matchMedia &&

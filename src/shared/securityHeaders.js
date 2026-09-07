@@ -16,7 +16,7 @@
 // these from the live index.html and fails loudly if they ever drift.
 export const INLINE_SCRIPT_HASHES = Object.freeze([
   "'sha256-hC99i7jZgIhZTLOH8GDOTVN/7joUX/IqPI7bPSXwXYM='",
-  "'sha256-kBaje8dx7wXla8MtjuY8vk4/Vr6QRnLM8uSmJO9shJU='",
+  "'sha256-DYSE0IDDb0PQIxKERxE5BSG5Fjg6QGeLGT0KQksRIw4='",
 ])
 
 /** @returns {string} */
