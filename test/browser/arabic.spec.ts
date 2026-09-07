@@ -6,13 +6,13 @@ const ar = JSON.parse(readFileSync('src/client/i18n/ar.json', 'utf8'))
 const routes = [...readFileSync('src/client/config/routes.ts', 'utf8').matchAll(/path:\s*'([^']+)'/g)].map(match => match[1]).concat('/missing-page')
 
 async function fulfillFromPreview(route: Route, url: URL) {
-  const response = await route.fetch({url: `http://127.0.0.1:4173${url.pathname}${url.search}`})
+  const response = await fetch(`http://127.0.0.1:4173${url.pathname}${url.search}`)
   // Materialize the response before fulfillment. Passing the live Response can
   // race with Playwright disposing it during parallel navigation requests.
   await route.fulfill({
-    status: response.status(),
-    headers: response.headers(),
-    body: await response.body(),
+    status: response.status,
+    headers: Object.fromEntries(response.headers),
+    body: Buffer.from(await response.arrayBuffer()),
   })
 }
 
