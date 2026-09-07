@@ -9,6 +9,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 import markUrl from '../brand/uzor-mark.svg'
 import LanguagePicker from './LanguagePicker'
 import ThemeToggle from './ThemeToggle'
+import ShareSettingsButton from './ShareSettingsButton'
 import { useLocale } from '../i18n/LocaleProvider'
 import { ROUTES } from '../config/routes'
 
@@ -250,6 +251,7 @@ export default function NavMenu() {
           >
             <LanguagePicker />
             <ThemeToggle />
+            <ShareSettingsButton />
           </div>
         </div>
       </header>
@@ -347,6 +349,7 @@ export default function NavMenu() {
             >
               <LanguagePicker />
               <ThemeToggle />
+              <ShareSettingsButton />
             </div>
           </div>
         </>

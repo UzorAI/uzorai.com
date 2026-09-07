@@ -118,5 +118,8 @@
   "notFound.title": "הדף לא נמצא",
   "notFound.body": "לא הצלחנו למצוא את הדף המבוקש.",
   "notFound.back": "חזרה לדף הבית",
-  "contact.subject": "בקשה להדגמת UzorAI"
+  "contact.subject": "בקשה להדגמת UzorAI",
+  "settings.share": "שיתוף הגדרות",
+  "settings.shared": "קישור ההגדרות הועתק",
+  "settings.shareFailed": "לא ניתן לשתף"
 }

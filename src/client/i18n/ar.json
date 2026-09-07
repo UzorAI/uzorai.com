@@ -118,5 +118,8 @@
   "notFound.title": "الصفحة غير موجودة",
   "notFound.body": "تعذر العثور على الصفحة المطلوبة.",
   "notFound.back": "العودة إلى الرئيسية",
-  "contact.subject": "طلب عرض UzorAI"
+  "contact.subject": "طلب عرض UzorAI",
+  "settings.share": "مشاركة الإعدادات",
+  "settings.shared": "تم نسخ رابط الإعدادات",
+  "settings.shareFailed": "تعذّرت المشاركة"
 }
