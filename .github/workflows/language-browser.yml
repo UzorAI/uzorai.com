@@ -1,4 +1,4 @@
-name: Hebrew localization
+name: Language browser audit
 on:
   pull_request:
   push:
@@ -6,7 +6,7 @@ on:
 permissions:
   contents: read
 jobs:
-  hebrew-browser:
+  language-browser:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -27,11 +27,11 @@ jobs:
           node scripts/language-impact-report.mjs --base "$BASE_SHA" --head "$HEAD_SHA" --json language-impact/report.json --markdown language-impact/report.md
       - run: npx playwright install --with-deps chromium
       - run: npm run build
-      - run: npm run test:hebrew:browser
+      - run: npm run test:language:browser
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
-          name: hebrew-localization-evidence
+          name: language-localization-evidence
           path: |
             test-results/
             language-impact/

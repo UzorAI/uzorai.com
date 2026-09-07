@@ -145,8 +145,8 @@ No plural inflection is needed for these singular metric labels.
 
 ## Verification
 
-See the final verification record below and the `Hebrew localization` CI artifact
-`hebrew-localization-evidence`. Browser tests serve the production build locally
+See the final verification record below and the language browser audit CI artifact
+`language-localization-evidence`. Browser tests serve the production build locally
 under intercepted real host names; this exercises both host-dependent heroes
 without deploying or contacting external services.
 

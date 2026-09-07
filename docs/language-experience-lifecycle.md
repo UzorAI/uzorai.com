@@ -54,16 +54,16 @@ node scripts/language-impact-report.mjs \
   --markdown language-impact/report.md
 ```
 
-The `Hebrew localization` workflow runs this report automatically for pull
+The `Language browser audit` workflow runs this report automatically for pull
 requests and pushes to `main`. It uploads `language-impact/report.json` and
-`language-impact/report.md` in the `hebrew-localization-evidence` artifact.
+`language-impact/report.md` in the `language-localization-evidence` artifact.
 
 To download evidence from a completed run:
 
 ```bash
 gh run download <run-id> \
   --repo UzorAI/uzorai.com \
-  -n hebrew-localization-evidence
+  -n language-localization-evidence
 ```
 
 ## Creating language work
