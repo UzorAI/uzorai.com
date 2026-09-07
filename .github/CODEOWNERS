@@ -8,3 +8,8 @@
 /.claude/             @daniel-silvers
 /scripts/security/    @daniel-silvers
 /.gitignore           @daniel-silvers
+/.gitleaks.toml       @daniel-silvers
+/SECURITY.md          @daniel-silvers
+/wrangler.toml        @daniel-silvers
+/package.json         @daniel-silvers
+/package-lock.json    @daniel-silvers

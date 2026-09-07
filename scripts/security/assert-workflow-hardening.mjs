@@ -180,6 +180,7 @@ const REQUIRED_GITIGNORE_LINES = [
   ".env",
   ".env.*",
   "!.env.example",
+  ".dev.vars*",
   "*.pem",
   "*.key",
   "*.log",
