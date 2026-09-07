@@ -15,6 +15,7 @@
     "deploy:demo": "npm run build && wrangler deploy --env demo",
     "deploy:production": "npm run build && wrangler deploy --env production",
     "test:hebrew": "tsx --test test/hebrew-localization.test.mjs",
+    "test:language-impact": "node --test test/language-impact-report.test.mjs",
     "test:hebrew:browser": "playwright test"
   },
   "dependencies": {

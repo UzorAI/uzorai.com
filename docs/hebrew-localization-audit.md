@@ -90,6 +90,28 @@ now resolves their IDs instead of rendering their English prose.
 | `notFound.back` | Return home | חזרה לדף הבית |
 | `contact.subject` | UzorAI demo request | בקשה להדגמת UzorAI |
 
+## Phase 2 — governed language impact contract (EPIC #145)
+
+Primary-page changes produce a deterministic language-impact report before
+Hebrew browser evidence runs. The contract is defined by
+`config/language-impact-manifest.json` and implemented by
+`scripts/language-impact-report.mjs`.
+
+The report maps changed files to the shipped locale set. Shared routes,
+components, content, workflow data, and presentation surfaces affect every
+locale; a dictionary or metadata file affects only its locale; documentation
+and test-only changes affect none. An unclassified client surface is reported
+for review and conservatively affects every locale. The report proposes one
+governed FEAT per affected language, with EPIC #145 as the parent.
+
+CI uploads the JSON and Markdown report as evidence. The script never creates
+issues, labels, approvals, pull requests, merges, or deployments. Each
+proposal requires human scope, wording, review, and approval decisions.
+The parity tests protect manifest validity, shared/locale/dynamic/docs/unknown
+classification, and stable output. Future language-specific redesigns may be
+promoted to their own FEAT or child EPIC without coupling their lifecycle to
+another locale.
+
 The only revised existing Hebrew dictionary value is the deployment detail's
 mixed-script punctuation (`ב-Worker` → `ב־Worker`). Bar/beat values remain
 numeric (for example `תיבה 32 · פעימה 1 · סיום`); version identifiers are unchanged.
