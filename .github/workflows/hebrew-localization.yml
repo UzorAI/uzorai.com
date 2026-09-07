@@ -13,10 +13,18 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
+          fetch-depth: 0
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 20
       - run: npm ci
+      - name: Report governed language impact
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          mkdir -p language-impact
+          node scripts/language-impact-report.mjs --base "$BASE_SHA" --head "$HEAD_SHA" --json language-impact/report.json --markdown language-impact/report.md
       - run: npx playwright install --with-deps chromium
       - run: npm run build
       - run: npm run test:hebrew:browser
@@ -24,5 +32,7 @@ jobs:
         if: always()
         with:
           name: hebrew-localization-evidence
-          path: test-results/
+          path: |
+            test-results/
+            language-impact/
           retention-days: 14

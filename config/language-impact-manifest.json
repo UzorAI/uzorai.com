@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "locales": [
+    { "code": "en", "dir": "ltr" },
+    { "code": "es", "dir": "ltr" },
+    { "code": "ru", "dir": "ltr" },
+    { "code": "zh", "dir": "ltr" },
+    { "code": "ar", "dir": "rtl" },
+    { "code": "he", "dir": "rtl" },
+    { "code": "fr", "dir": "ltr" },
+    { "code": "uk", "dir": "ltr" }
+  ],
+  "surfaces": [
+    { "id": "routes-and-components", "paths": ["src/client/routes/", "src/client/components/", "src/client/App.tsx", "src/client/config/routes.ts"], "impact": "shared", "user_facing": true },
+    { "id": "shared-content-and-demos", "paths": ["src/client/content/", "src/client/workflow/", "src/client/performance/"], "impact": "shared", "user_facing": true },
+    { "id": "shared-presentation", "paths": ["src/client/styles/", "src/client/brand/", "src/client/index.html", "public/"], "impact": "shared", "user_facing": true },
+    { "id": "translation-dictionary", "paths": ["src/client/i18n/"], "impact": "locale", "user_facing": true },
+    { "id": "translation-metadata", "paths": ["src/client/i18n/meta/"], "impact": "locale", "user_facing": true },
+    { "id": "developer-only", "paths": ["docs/", "test/", "scripts/", "issues/", ".github/"], "impact": "none", "user_facing": false }
+  ]
+}
