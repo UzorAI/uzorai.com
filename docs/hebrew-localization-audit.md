@@ -96,7 +96,7 @@ The reusable lifecycle procedure is documented in
 [`docs/language-experience-lifecycle.md`](language-experience-lifecycle.md).
 
 Primary-page changes produce a deterministic language-impact report before
-Hebrew browser evidence runs. The contract is defined by
+language browser evidence runs. The contract is defined by
 `config/language-impact-manifest.json` and implemented by
 `scripts/language-impact-report.mjs`.
 
