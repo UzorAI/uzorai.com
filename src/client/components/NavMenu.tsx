@@ -22,7 +22,7 @@ import { ROUTES } from '../config/routes'
 
 // Match the htu.io NavMenu breakpoint — the mobile/tablet boundary at which the
 // horizontal bar collapses to the hamburger + drawer.
-const BREAKPOINT = 768
+const BREAKPOINT = 1100
 
 // Focusable elements inside the drawer, for the focus trap.
 const FOCUSABLE =
@@ -38,7 +38,7 @@ function linkStyle(isActive: boolean, drawer: boolean): CSSProperties {
     color: isActive ? 'var(--accent)' : 'var(--slate-400)',
     ...(drawer
       ? {
-          borderLeft: isActive
+          borderInlineStart: isActive
             ? '3px solid var(--accent)'
             : '3px solid transparent',
         }
@@ -53,11 +53,12 @@ function linkStyle(isActive: boolean, drawer: boolean): CSSProperties {
 // Brand mark folded in from the old Header — links Home, the only brand mark in
 // the scaffold (branding/uzor-logo.svg → brand/uzor-mark.svg).
 function Brand() {
+  const { t } = useLocale()
   return (
     <Link
       to="/"
       style={{ display: 'flex', alignItems: 'center', gap: 12 }}
-      aria-label="UzorAI home"
+      aria-label={t('nav.brandHome')}
     >
       <img src={markUrl} alt="UzorAI" width={36} height={36} />
       <span style={{ fontWeight: 800, fontSize: 20, letterSpacing: '0.02em' }}>
@@ -236,12 +237,12 @@ export default function NavMenu() {
           <div style={{ padding: '14px 0' }}>
             <Brand />
           </div>
-          <nav style={{ display: 'flex', gap: 8, marginLeft: 8 }}>
+          <nav style={{ display: 'flex', gap: 8, marginInlineStart: 8 }}>
             {links(false)}
           </nav>
           <div
             style={{
-              marginLeft: 'auto',
+              marginInlineStart: 'auto',
               display: 'flex',
               alignItems: 'center',
               gap: 14,
@@ -271,7 +272,7 @@ export default function NavMenu() {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          aria-label={open ? 'Close menu' : 'Open menu'}
+          aria-label={t(open ? 'nav.closeMenu' : 'nav.openMenu')}
           aria-expanded={open}
           aria-controls="nav-drawer"
           style={iconButtonStyle}
@@ -298,15 +299,15 @@ export default function NavMenu() {
             ref={drawerRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Site navigation"
+            aria-label={t('nav.siteNavigation')}
             style={{
               position: 'fixed',
               top: 0,
-              right: 0,
+              insetInlineEnd: 0,
               bottom: 0,
               width: 'min(82vw, 320px)',
               background: 'var(--surface)',
-              borderLeft: '1px solid var(--slate-700)',
+              borderInlineStart: '1px solid var(--slate-700)',
               zIndex: 70,
               display: 'flex',
               flexDirection: 'column',
@@ -324,7 +325,7 @@ export default function NavMenu() {
               <button
                 type="button"
                 onClick={close}
-                aria-label="Close menu"
+                aria-label={t('nav.closeMenu')}
                 style={iconButtonStyle}
               >
                 <CloseIcon />

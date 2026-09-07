@@ -12,7 +12,7 @@ export default function Platform() {
   return (
     <section style={{ maxWidth: 960, margin: '0 auto' }}>
       <div style={{ textAlign: 'center', maxWidth: 720, margin: '0 auto' }}>
-        <img src={markUrl} alt="UzorAI cube mark" width={72} height={72} />
+        <img src={markUrl} alt={t('brand.markAlt')} width={72} height={72} />
         <h1 style={{ fontSize: 40, fontWeight: 800, marginTop: 24 }}>
           {t('platform.title')}
         </h1>

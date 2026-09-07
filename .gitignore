@@ -35,3 +35,7 @@ Thumbs.db
 .claude/settings.local.json
 .claude/tmp/
 *.tmp
+
+# Browser verification output (published as CI artifacts).
+test-results/
+playwright-report/

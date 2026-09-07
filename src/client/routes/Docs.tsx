@@ -10,7 +10,7 @@ export default function Docs() {
   const { t } = useLocale()
   return (
     <section style={{ maxWidth: 720, margin: '0 auto', textAlign: 'center' }}>
-      <img src={markUrl} alt="UzorAI cube mark" width={72} height={72} />
+      <img src={markUrl} alt={t('brand.markAlt')} width={72} height={72} />
       <h1 style={{ fontSize: 40, fontWeight: 800, marginTop: 24 }}>
         {t('docs.title')}
       </h1>
@@ -22,6 +22,7 @@ export default function Docs() {
       </p>
       <SafeExternalLink
         href="https://skills.uzorai.com/mcp"
+        dir="ltr"
         className="mono"
         style={{
           display: 'inline-block',

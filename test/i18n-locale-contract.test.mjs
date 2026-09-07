@@ -32,15 +32,19 @@ const metaZh = require('../src/client/i18n/meta/zh.json')
 const metaAr = require('../src/client/i18n/meta/ar.json')
 const metaHe = require('../src/client/i18n/meta/he.json')
 
-const SHIPPED_LOCALES = { en, es, ru, zh, ar, he }
-const META = { en: metaEn, es: metaEs, ru: metaRu, zh: metaZh, ar: metaAr, he: metaHe }
+const fr = require('../src/client/i18n/fr.json')
+const uk = require('../src/client/i18n/uk.json')
+const SHIPPED_LOCALES = { en, es, ru, zh, ar, he, fr, uk }
+const META = { en: metaEn, es: metaEs, ru: metaRu, zh: metaZh, ar: metaAr, he: metaHe, fr: require('../src/client/i18n/meta/fr.json'), uk: require('../src/client/i18n/meta/uk.json') }
 
 // ---------------------------------------------------------------------------
 // AC1 — Fallback order: active dict → en → key
 // ---------------------------------------------------------------------------
 
-test('AC1: t() fallback order — active dict → en → key, for every shipped locale', () => {
+test('AC1: legacy fallback contract for non-Hebrew locales', () => {
   for (const [code, dict] of Object.entries(SHIPPED_LOCALES)) {
+    // Hebrew's strict resolver is exercised in hebrew-localization.test.mjs.
+    if (code === 'he') continue
     // Tier 1: key present in active dict resolves from active dict
     const keyInAll = 'nav.home'
     const tier1 = dict[keyInAll] ?? en[keyInAll] ?? keyInAll

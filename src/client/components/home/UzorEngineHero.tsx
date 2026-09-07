@@ -54,7 +54,7 @@ export default function UzorEngineHero() {
   const activeStage = UZOR_GO_MANIFEST.find((stage)=>stage.id===activeEvent?.stageId) ?? null
   const activeCanonicalLabel =
     activeStage != null
-      ? stages.find((stage) => stage.id === activeStage.id)?.label ?? ''
+      ? t(`home.engine.stage.${activeStage.id}.label`)
       : ''
 
   // A single announcement channel — this element is both the visible status
@@ -104,7 +104,7 @@ export default function UzorEngineHero() {
               data-revealed={index < revealedCount}
               style={{ '--brick-index': index } as CSSProperties}
             >
-              {stage.label}
+              {t(`home.engine.stage.${stage.id}.label`)}
             </li>
           ))}
         </ol>
@@ -112,13 +112,13 @@ export default function UzorEngineHero() {
         <p className="uzor-engine-status" role="status" aria-live="polite">
           {liveText}
         </p>
-        <p className="uzor-engine-detail">Bar {performanceRun.position.bar} · Beat {performanceRun.position.beatInBar} · {PERFORMANCE_EVENTS.find((event) => event.bar === performanceRun.position.bar)?.phase ?? 'orientation'}</p>
+        <p className="uzor-engine-detail">{t('home.engine.hud.bar')} {performanceRun.position.bar} · {t('home.engine.hud.beat')} {performanceRun.position.beatInBar} · {t(`home.engine.phase.${PERFORMANCE_EVENTS.find((event) => event.bar === performanceRun.position.bar)?.phase ?? 'orientation'}`)}</p>
         {activeStage != null && <p className="uzor-engine-detail">{t(activeStage.detailKey)}</p>}
 
         {performanceRun.position.complete && (
           <div className="uzor-engine-payoff">
-            <strong>{REPRESENTATIVE_ARTIFACT.label}</strong>
-            <span>{REPRESENTATIVE_ARTIFACT.type} · model {REPRESENTATIVE_ARTIFACT.workflowVersion}</span>
+            <strong>{t('home.engine.artifact.label')}</strong>
+            <span>{t('home.engine.artifact.type')} · {t('home.engine.artifact.model')} <bdi>{REPRESENTATIVE_ARTIFACT.workflowVersion}</bdi></span>
             <p>{t('home.engine.payoff.1')}</p>
             <p>{t('home.engine.payoff.2')}</p>
             <p>{t('home.engine.payoff.3')}</p>

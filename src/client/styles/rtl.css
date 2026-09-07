@@ -14,12 +14,6 @@
   text-align: right;
 }
 
-/* Header tagline pins to the inline-start edge instead of the right margin. */
-[dir='rtl'] header .mono[style*='margin-left'] {
-  margin-left: 0 !important;
-  margin-right: auto !important;
-}
-
 /* Native form controls (the language picker) align text to the start edge. */
 [dir='rtl'] select {
   text-align: right;
@@ -35,3 +29,7 @@
 html[lang='he'] {
   --font-sans: 'Heebo', 'Rubik', 'Assistant', 'Inter', system-ui, -apple-system, sans-serif;
 }
+
+/* Mono stacks lack Hebrew glyphs; prose uses the loaded Hebrew face. */
+html[lang='he'] .mono,
+html[lang='he'] .uzor-engine-payoff { font-family: var(--font-sans); }

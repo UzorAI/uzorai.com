@@ -122,3 +122,13 @@ a {
 .mono {
   font-family: var(--font-mono);
 }
+
+/* Reflow content rather than hiding overflow (including RTL and long URLs). */
+button, select { font-family: inherit; }
+.app main, .app main .wrap, .uzor-engine-content { min-width: 0; }
+.app main { overflow-wrap: anywhere; }
+.app main a { max-width: 100%; }
+@media (max-width: 720px) {
+  .wrap { padding-inline: 20px; }
+  .legacy-home-hero { grid-template-columns: 1fr !important; }
+}

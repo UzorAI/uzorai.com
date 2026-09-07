@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useState,
   type ReactNode,
 } from 'react'
@@ -14,23 +15,24 @@ import {
   type LocaleCode,
 } from '../config/languages'
 import { readBoundedStorage, writeBoundedStorage } from '../../shared/safeStorage'
-// `en` is the canonical fallback — imported eagerly so `t()` can always resolve
-// a missing key to its English string, even before the active dictionary loads.
+// English remains the canonical source and fallback for non-Hebrew locales.
 import en from './en.json'
+// Hebrew is synchronous so a stored choice or switch never paints English.
+import he from './he.json'
+import { translate } from './translate'
 
 type Dict = Record<string, string>
 
 // Lazy per-locale loaders (Vite glob): only the active locale's JSON is fetched
 // beyond the eager `en` fallback, keeping the initial bundle small. `en` is
-// excluded — it ships in the main chunk as the static fallback. Keyed by path,
+// excluded along with Hebrew; both ship synchronously in the main chunk. Keyed by path,
 // e.g. './es.json' -> () => Promise<{ default: Dict }>.
-const loaders = import.meta.glob<{ default: Dict }>(['./*.json', '!./en.json'])
+const loaders = import.meta.glob<{ default: Dict }>(['./*.json', '!./en.json', '!./he.json'])
 
 interface LocaleContextValue {
   locale: LocaleCode
   setLocale: (code: LocaleCode) => void
-  /** Resolve a key against the active dictionary, falling back to `en`, then
-   *  to the key itself — never blank. */
+  /** Hebrew requires an explicit translation; other locales retain en/key fallback. */
   t: (key: string) => string
 }
 
@@ -51,22 +53,19 @@ function detectInitialLocale(): LocaleCode {
 }
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  // Start from the canonical default for a deterministic first paint, then
-  // resolve the persisted/navigator locale on mount (client-only).
-  const [locale, setLocaleState] = useState<LocaleCode>(DEFAULT_LOCALE)
+  const [locale, setLocaleState] = useState<LocaleCode>(detectInitialLocale)
   const [dict, setDict] = useState<Dict>(en)
-
-  useEffect(() => {
-    const initial = detectInitialLocale()
-    if (initial !== DEFAULT_LOCALE) setLocaleState(initial)
-  }, [])
 
   // Apply <html lang/dir> and lazily load the active dictionary. RTL locales
   // (`ar` and `he`) flip the document direction; styles/rtl.css handles
   // the visual flips under [dir="rtl"].
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.lang = locale
     document.documentElement.dir = dirFor(locale)
+  }, [locale])
+
+  useEffect(() => {
+    if (locale === 'he') return
 
     if (locale === DEFAULT_LOCALE) {
       setDict(en)
@@ -80,6 +79,8 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     let cancelled = false
     load().then((mod) => {
       if (!cancelled) setDict(mod.default)
+    }).catch(() => {
+      if (!cancelled) setDict(en)
     })
     return () => {
       cancelled = true
@@ -92,8 +93,8 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const t = useCallback(
-    (key: string): string => dict[key] ?? (en as Dict)[key] ?? key,
-    [dict],
+    (key: string): string => translate(locale, locale === 'he' ? he : locale === 'en' ? en : dict, en, key),
+    [dict, locale],
   )
 
   return (

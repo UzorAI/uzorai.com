@@ -10,7 +10,7 @@ import { useLocale } from '../../i18n/LocaleProvider'
 export default function LegacyHomeHero() {
   const { t } = useLocale()
   return (
-    <section
+    <section className="legacy-home-hero"
       style={{
         display: 'grid',
         gridTemplateColumns: 'minmax(0, 1.15fr) minmax(0, 0.85fr)',
@@ -107,7 +107,7 @@ export default function LegacyHomeHero() {
         />
         <img
           src={markUrl}
-          alt="UzorAI cube mark"
+          alt={t('brand.markAlt')}
           style={{
             width: 'min(360px, 80%)',
             height: 'auto',

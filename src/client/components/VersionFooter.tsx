@@ -34,33 +34,33 @@ const DEPLOYMENTS: Deployment[] = [
   {
     version: '0.2.0',
     date: '2026-06-18',
-    title: 'Deployment History footer + imperative i18n voice',
+    title: 'footer.release.020.title',
     environment: 'production',
     status: 'success',
     details: [
-      'Fixed-bottom version stripe with a clickable Deployment History overlay (htu.io parity)',
-      'Russian hero tagline switched to the informal imperative',
-      "Hero verbs to imperative, matching each locale's body voice (ru вы, es tú)",
-      "Hero meaning-strip label routed through t('home.meaning.label')",
+      'footer.release.020.detail.1',
+      'footer.release.020.detail.2',
+      'footer.release.020.detail.3',
+      'footer.release.020.detail.4',
     ],
   },
   {
     version: '0.1.0',
     date: '2026-06-14',
-    title: 'Platform scaffold — orchestration marketing site',
+    title: 'footer.release.010.title',
     environment: 'production',
     status: 'success',
     details: [
-      'React 19 + react-router v7 static shell on Cloudflare Workers',
-      'In-house i18n (en/es/ru/zh) with LanguagePicker — third-party translation denied',
-      'Dark/Light theme toggle with pre-paint persistence (EPIC #29 Phase A)',
-      'Responsive navigation shell (EPIC #29 Phase C)',
+      'footer.release.010.detail.1',
+      'footer.release.010.detail.2',
+      'footer.release.010.detail.3',
+      'footer.release.010.detail.4',
     ],
   },
 ]
 
 export default function VersionFooter() {
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
   const mode = import.meta.env.MODE
   const isProd = import.meta.env.PROD
   const [showVersions, setShowVersions] = useState(false)
@@ -105,6 +105,8 @@ export default function VersionFooter() {
           }}
         >
           <button
+            aria-label={t('footer.deploymentHistory')}
+            dir="ltr"
             onClick={() => {
               setShowVersions(!showVersions)
               setSelectedDeploy(null)
@@ -112,7 +114,7 @@ export default function VersionFooter() {
             style={{
               color: 'var(--color-text-muted)',
               fontSize: 12,
-              fontFamily: 'monospace',
+              fontFamily: 'var(--font-sans)',
               letterSpacing: 0.5,
               background: 'none',
               border: 'none',
@@ -150,6 +152,8 @@ export default function VersionFooter() {
           }}
         >
           <div
+            role="dialog"
+            aria-label={t('footer.deploymentHistory')}
             style={{
               background: 'var(--color-bg)',
               border: '1px solid var(--color-border)',
@@ -197,10 +201,11 @@ export default function VersionFooter() {
                       fontSize: 13,
                     }}
                   >
-                    {`← ${t('footer.back')}`}
+                    {`${locale === 'he' || locale === 'ar' ? '→' : '←'} ${t('footer.back')}`}
                   </button>
                 )}
                 <button
+                  aria-label={t('footer.close')}
                   onClick={() => {
                     setShowVersions(false)
                     setSelectedDeploy(null)
@@ -231,7 +236,8 @@ export default function VersionFooter() {
               {!selectedDeploy ? (
                 <div style={{ display: 'grid', gap: 12 }}>
                   {DEPLOYMENTS.map((d) => (
-                    <div
+                    <button
+                      type="button"
                       key={d.version}
                       onClick={() => setSelectedDeploy(d)}
                       style={{
@@ -241,6 +247,8 @@ export default function VersionFooter() {
                         cursor: 'pointer',
                         border: '1px solid var(--color-border-strong)',
                         transition: 'border-color 0.2s',
+                        textAlign: 'start',
+                        fontFamily: 'inherit',
                       }}
                       onMouseEnter={(e) =>
                         (e.currentTarget.style.borderColor =
@@ -256,6 +264,8 @@ export default function VersionFooter() {
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
+                          gap: 12,
+                          flexWrap: 'wrap',
                         }}
                       >
                         <span
@@ -265,16 +275,16 @@ export default function VersionFooter() {
                             fontSize: 15,
                           }}
                         >
-                          {d.title}
+                          {t(d.title)}
                         </span>
                         <span
                           style={{
                             color: 'var(--color-accent)',
-                            fontFamily: 'monospace',
+                            fontFamily: 'var(--font-sans)',
                             fontSize: 13,
                           }}
                         >
-                          v{d.version}
+                          <bdi>{`v${d.version}`}</bdi>
                         </span>
                       </div>
                       <div
@@ -282,12 +292,12 @@ export default function VersionFooter() {
                           color: 'var(--color-text-muted)',
                           fontSize: 12,
                           marginTop: 4,
-                          fontFamily: 'monospace',
+                          fontFamily: 'var(--font-sans)',
                         }}
                       >
-                        {d.date}
+                        <bdi>{d.date}</bdi>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               ) : (
@@ -299,35 +309,36 @@ export default function VersionFooter() {
                       fontSize: 18,
                     }}
                   >
-                    {selectedDeploy.title}
+                    {t(selectedDeploy.title)}
                   </h3>
                   <p
                     style={{
                       color: 'var(--color-text-muted)',
-                      fontFamily: 'monospace',
+                      fontFamily: 'var(--font-sans)',
                       fontSize: 13,
                       margin: '0 0 16px',
                     }}
                   >
-                    {selectedDeploy.date} · v{selectedDeploy.version}
+                    <bdi>{`${selectedDeploy.date} · v${selectedDeploy.version}`}</bdi>
                   </p>
                   <div
                     style={{
                       display: 'flex',
                       gap: 16,
+                      flexWrap: 'wrap',
                       marginBottom: 16,
                       fontSize: 13,
                     }}
                   >
                     <span style={{ color: 'var(--color-text-tertiary)' }}>
-                      Environment:{' '}
+                      {t('footer.environment')}: {' '}
                       <span style={{ color: 'var(--color-text-primary)' }}>
-                        {selectedDeploy.environment}
+                        {t(`footer.environment.${selectedDeploy.environment}`)}
                       </span>
                     </span>
                     {selectedDeploy.status && (
                       <span style={{ color: 'var(--color-text-tertiary)' }}>
-                        Status:{' '}
+                        {t('footer.status')}: {' '}
                         <span
                           style={{
                             color:
@@ -336,7 +347,7 @@ export default function VersionFooter() {
                                 : 'var(--color-error)',
                           }}
                         >
-                          {selectedDeploy.status}
+                          {t(`footer.status.${selectedDeploy.status}`)}
                         </span>
                       </span>
                     )}
@@ -363,7 +374,7 @@ export default function VersionFooter() {
                           >
                             {'✓'}
                           </span>
-                          <span>{item}</span>
+                          <span>{t(item)}</span>
                         </div>
                       ))}
                     </div>

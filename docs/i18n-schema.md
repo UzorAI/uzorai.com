@@ -28,7 +28,7 @@ Each locale is a flat JSON file at `src/client/i18n/<code>.json`:
 
 ## Fallback contract
 
-`LocaleProvider.t()` resolves a key in three ordered tiers — never blank:
+For non-Hebrew locales, `LocaleProvider.t()` resolves a key in three ordered tiers — never blank:
 
 ```
 t(key) = activeDict[key] ?? en[key] ?? key
@@ -46,6 +46,14 @@ t(key) = activeDict[key] ?? en[key] ?? key
 - Tier 3 indicates a bug: the key was never added to `en.json`.
 
 ---
+
+Hebrew (`he`) is loaded synchronously and must have a nonempty value for every
+English source key. The real resolver throws on a missing/blank Hebrew key;
+it never falls back to English. `npm run test:hebrew` checks parity, duplicate
+JSON keys, pending entries, approved Latin exceptions, and dynamic stage keys.
+`npm run test:hebrew:browser` crawls the production build across both host roles,
+all routes and conditional states, desktop/mobile, and both themes. The CI
+workflow uploads screenshots and audit snapshots. Run `npm run build` first.
 
 ## Per-string review/version metadata
 

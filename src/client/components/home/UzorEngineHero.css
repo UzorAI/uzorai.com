@@ -118,12 +118,11 @@
   align-items: flex-end;
   gap: 10px;
   list-style: none;
-  /* Never wrap: wrapping would break the upward/rightward staircase offsets
-   * below into overlapping rows. A narrow desktop column scrolls instead —
-   * still a single bounded row of at most one brick per canonical stage. */
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  padding: 18px 2px 6px;
+  /* Wrap in canonical DOM order. Long translations must remain fully visible,
+   * including on narrow desktop columns: no internal scrollbar or clipping. */
+  flex-wrap: wrap;
+  padding: 6px 2px;
+
 }
 
 .uzor-engine-brick {
@@ -133,15 +132,15 @@
   background: rgba(30, 41, 59, 0.4);
   font-size: 13px;
   font-weight: 600;
-  white-space: nowrap;
+  white-space: normal;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   flex-shrink: 0;
   opacity: 0.35;
   transition: opacity 0.25s ease, transform 0.25s ease;
-  /* Bounded upward/rightward construction: each later brick sits a little
-   * higher and a little further along the inline direction than the last.
-   * --brick-index is set inline per item by the component. */
-  transform: translateY(calc(var(--brick-index, 0) * -10px));
-  margin-inline-start: calc(var(--brick-index, 0) * 8px);
+  /* Reflow without offsets that would overlap wrapped rows. */
+  transform: none;
+  margin-inline-start: 0;
 }
 
 .uzor-engine-brick[data-revealed='true'] {

@@ -1,3 +1,4 @@
+import { useLocale } from '../i18n/LocaleProvider'
 import { useTheme } from '../theme/ThemeProvider'
 
 // Ported from htu-foundation's ThemeToggle.jsx: a single icon button that
@@ -50,8 +51,9 @@ function MoonIcon() {
 
 export default function ThemeToggle() {
   const { theme, toggle } = useTheme()
+  const { t } = useLocale()
   const label =
-    theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+    t(theme === 'dark' ? 'theme.light' : 'theme.dark')
 
   return (
     <button
