@@ -92,6 +92,9 @@ now resolves their IDs instead of rendering their English prose.
 
 ## Phase 2 — governed language impact contract (EPIC #145)
 
+The reusable lifecycle procedure is documented in
+[`docs/language-experience-lifecycle.md`](language-experience-lifecycle.md).
+
 Primary-page changes produce a deterministic language-impact report before
 Hebrew browser evidence runs. The contract is defined by
 `config/language-impact-manifest.json` and implemented by
