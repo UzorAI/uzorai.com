@@ -10,7 +10,7 @@ async function fulfillFromPreview(route: Route, url: URL) {
   // route.fetch response while parallel navigation requests are settling.
   const response = await fetch(`http://127.0.0.1:4173${url.pathname}${url.search}`)
   await route.fulfill({
-    status: response.status(),
+    status: response.status,
     headers: Object.fromEntries(response.headers()),
     body: Buffer.from(await response.arrayBuffer()),
   })
