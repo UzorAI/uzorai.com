@@ -1,5 +1,6 @@
 import { test, expect, type Page, type Route } from '@playwright/test'
 import { readFileSync } from 'node:fs'
+import { latinExceptions } from '../helpers/hebrew-allowlist.mjs'
 
 const ar = JSON.parse(readFileSync('src/client/i18n/ar.json', 'utf8'))
 const routes = [...readFileSync('src/client/config/routes.ts', 'utf8').matchAll(/path:\s*'([^']+)'/g)].map(match => match[1]).concat('/missing-page')
@@ -19,6 +20,23 @@ async function audit(page: Page, name: string) {
   await expect(page.locator('html')).toHaveAttribute('lang', 'ar')
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
   await expect(page.getByRole('link', {name: ar['nav.brandHome'], exact: true})).toBeVisible()
+  const texts = await page.locator('body').evaluate(body => {
+    const visible = (el: Element) => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden'
+    const result: string[] = []
+    const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT)
+    while (walker.nextNode()) {
+      const node = walker.currentNode
+      const parent = node.parentElement
+      if (parent && visible(parent) && !parent.closest('script,style,option')) result.push(node.textContent || '')
+    }
+    for (const el of document.querySelectorAll('[aria-label],[alt],[title],[placeholder]')) {
+      if (visible(el)) for (const attr of ['aria-label', 'alt', 'title', 'placeholder']) result.push(el.getAttribute(attr) || '')
+    }
+    result.push(document.title, document.querySelector('meta[name="description"]')?.getAttribute('content') || '')
+    return result.filter(text => text.trim())
+  })
+  const unintended = texts.filter(text => /[A-Za-z]/.test(text.replace(latinExceptions, '')))
+  expect(unintended, `${name}: unintended English`).toEqual([])
   await test.info().attach(name, {
     body: JSON.stringify({
       title: await page.title(),
