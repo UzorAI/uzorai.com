@@ -155,7 +155,9 @@ export default function Home() {
               border: '1px solid rgba(167,227,229,0.25)',
               borderRadius: 10,
               padding: '12px 18px',
-              whiteSpace: 'nowrap',
+              overflowWrap: 'anywhere',
+              maxWidth: '100%',
+              direction: 'ltr',
             }}
           >
             https://skills.uzorai.com/mcp
