@@ -51,7 +51,7 @@ Hebrew (`he`) is loaded synchronously and must have a nonempty value for every
 English source key. The real resolver throws on a missing/blank Hebrew key;
 it never falls back to English. `npm run test:hebrew` checks parity, duplicate
 JSON keys, pending entries, approved Latin exceptions, and dynamic stage keys.
-`npm run test:hebrew:browser` crawls the production build across both host roles,
+`npm run test:language:browser` crawls the production build across both host roles,
 all routes and conditional states, desktop/mobile, and both themes. The CI
 workflow uploads screenshots and audit snapshots. Run `npm run build` first.
 
