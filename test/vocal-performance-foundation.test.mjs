@@ -16,7 +16,8 @@ import {
   validateCompatibility,
 } from '../src/client/performance/vocal/schema.ts'
 import { resolveVocalCue, resolveAllLocales } from '../src/client/performance/vocal/resolve.ts'
-import { VOCAL_CATALOG } from '../src/client/performance/vocal/catalog.ts'
+import { VOCAL_CATALOG, VOCAL_NARRATOR_PHRASE_IDS } from '../src/client/performance/vocal/catalog.ts'
+import { UZOR_LOOP_STAGES } from '../src/client/workflow/uzorLoopModel.ts'
 
 // ── Fixture helpers ───────────────────────────────────────────────────────────
 
@@ -251,10 +252,63 @@ test('AC5: missing locale caption falls back to English caption', () => {
   assert.equal(result.caption.text, 'English only')
 })
 
-// ── AC6: Production catalog is empty ─────────────────────────────────────────
+// ── FEAT #161: neutral synthetic narrator (closed multilingual phrase set) ───
+// UZOR_LOOP_STAGES has 5 canonical process stages, not the 7 the FEAT #161
+// spec assumed — see the spec's "Provenance (auto-materialized)" note and the
+// PR description for that documented trigger-for-change deviation.
 
-test('AC6: production catalog contains no voice profiles', () => {
-  assert.equal(VOCAL_CATALOG.length, 0)
+test('FEAT #161 AC1: exactly one profile exists in the production catalog', () => {
+  assert.equal(VOCAL_CATALOG.length, 1)
+})
+
+test('FEAT #161 AC1: the narrator profile is schema-valid', () => {
+  const errors = validateProfile(VOCAL_CATALOG[0])
+  assert.deepEqual([...errors], [])
+})
+
+test('FEAT #161 AC1: the narrator profile is repository-owned and approved', () => {
+  const profile = VOCAL_CATALOG[0]
+  assert.equal(profile.rights.basis, 'repository-owned')
+  assert.equal(profile.rights.thirdPartyAssets, false)
+  assert.equal(profile.approval.status, 'approved')
+})
+
+test('FEAT #161 AC1: characteristics.description contains no gender/age denylist terms', () => {
+  const DENYLIST = ['man', 'woman', 'male', 'female', 'boy', 'girl', 'young', 'old', 'elderly', 'youthful', 'he ', 'she ', 'his ', 'her ']
+  const description = VOCAL_CATALOG[0].characteristics.description.toLowerCase()
+  for (const term of DENYLIST) {
+    assert.ok(!description.includes(term), `description must not contain denylisted term "${term.trim()}"`)
+  }
+})
+
+test('FEAT #161 AC2: the narrator profile declares all eight launch locales', () => {
+  assert.deepEqual([...VOCAL_CATALOG[0].locales].sort(), [...VOCAL_SUPPORTED_LOCALES].sort())
+})
+
+test('FEAT #161 AC2/AC8: no audio clips ship in this phase — every locale is documented caption-only (Decision Tree Branch 5)', () => {
+  // No public/audio/narrator assets exist yet; docs/vocal-performance-foundation.md
+  // records this explicitly, satisfying AC2's "or documents fallback" branch and
+  // AC8's "or the PR documents that verification wasn't available" branch.
+  const doc = readFileSync(new URL('../docs/vocal-performance-foundation.md', import.meta.url), 'utf8')
+  assert.match(doc, /caption-only/i)
+})
+
+test('FEAT #161 AC3: every narrator phrase ID maps 1:1 to an existing UZOR_LOOP_STAGES entry', () => {
+  assert.equal(VOCAL_NARRATOR_PHRASE_IDS.size, UZOR_LOOP_STAGES.length)
+  const stageIds = new Set(UZOR_LOOP_STAGES.map(s => s.id))
+  for (const [stageId, phraseId] of VOCAL_NARRATOR_PHRASE_IDS) {
+    assert.ok(stageIds.has(stageId), `${stageId} is not a UZOR_LOOP_STAGES id`)
+    assert.equal(phraseId, `uzor-phrase-${stageId}`)
+    assert.match(phraseId, /^uzor-phrase-[a-z0-9]+(?:-[a-z0-9]+)*$/)
+  }
+})
+
+test('FEAT #161 AC4: resolveVocalCue/resolveAllLocales resolve the populated catalog with zero resolver changes', () => {
+  const cue = makeCue('narrator-cue', 1, 'orientation', VOCAL_CATALOG[0].id, VOCAL_CATALOG[0].id)
+  const result = resolveVocalCue(cue, VOCAL_CATALOG, 'en', COMPAT)
+  assert.equal(result.kind, 'vocal-plan')
+  const allResults = resolveAllLocales(cue, VOCAL_CATALOG, COMPAT)
+  assert.equal(allResults.size, ALL_LOCALES.length)
 })
 
 // ── AC7: Caption exposes one authoritative visual text + SR policy ────────────

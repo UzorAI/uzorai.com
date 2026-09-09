@@ -6,12 +6,44 @@ Phase 6 of 10 (EPIC UzorAI/uzorai.com#69). Adds the code-only, deterministic fou
 
 - `src/client/performance/vocal/schema.ts` — versioned serializable types, validation, and compatibility pins.
 - `src/client/performance/vocal/resolve.ts` — pure offline resolver returning a vocal plan or caption-only fallback.
-- `src/client/performance/vocal/catalog.ts` — empty production catalog (no voice assets in this phase).
+- `src/client/performance/vocal/catalog.ts` — production catalog and phrase-ID assignment; see "Phase 6 content increment" below for what it now holds.
 - `test/vocal-performance-foundation.test.mjs` — focused tests covering all eight acceptance criteria.
 
 ## What this phase does NOT ship
 
 No generated voice, binary audio, third-party media, provider SDK, live voice API, runtime network call, browser secret, or rendered UI behavior. The foundation is unconsumed by any route or transport in this phase.
+
+## Phase 6 content increment — neutral synthetic narrator (FEAT #161)
+
+Populates the previously empty production catalog with exactly one
+repository-owned, rights-cleared, ungendered narrator profile
+(`uzor-narrator-neutral-01`), covering all eight launch locales structurally.
+`resolveVocalCue`/`resolveAllLocales` and `schema.ts` required zero code
+changes — only `catalog.ts` gained the profile and phrase-ID assignment,
+confirming the foundation's contracts were sufficient as designed.
+
+**Spec deviation, documented per the spec's own trigger-for-change rule:**
+FEAT #161 assumed "seven canonical workflow-stage labels" in `UZOR_LOOP_STAGES`.
+At implementation time `UZOR_LOOP_STAGES` (and the matching
+`home.engine.stage.*` i18n keys, and `UZOR_GO_MANIFEST`) had exactly **five**
+stages: `authoring`, `governance`, `implementation-verification`,
+`deployment`, `learning-continuation`. There is no set of seven stage labels
+anywhere in the codebase. Rather than invent two stage labels that don't
+exist, this phase implements against the actual five, via
+`VOCAL_NARRATOR_PHRASE_IDS` in `catalog.ts` (one `uzor-phrase-<stage-id>` per
+`UZOR_LOOP_STAGES` entry). The "7 phrases × 8 locales = 56 clips" estimate in
+the spec is accordingly 5 × 8 = 40 once audio ships.
+
+**No audio clips ship in this phase.** Offline audio-generation tooling and a
+locale-competent human pronunciation reviewer were both unavailable in this
+implementation session, and AC8 requires a human — not the generation tool
+itself — to confirm each locale's audio is intelligible. Per Decision Tree
+Branch 5, every locale for every phrase therefore resolves through the
+resolver's existing, already-tested caption-only fallback; no
+`public/audio/narrator/` assets exist yet. Producing the actual clips and
+routing them through per-locale human review is tracked as follow-up work,
+not silently deferred: this document and the FEAT #161 PR both record it.
+Total added static-asset weight in this PR is 0 bytes.
 
 ## Roles
 
@@ -76,10 +108,22 @@ To add a new profile to the production catalog:
 
 ## Phase 7 integration
 
+FEAT #161 (see "Phase 6 content increment" above) took on a deliberately
+bounded slice of this job early — a closed, five-phrase set derived from the
+existing `UZOR_LOOP_STAGES` labels, rather than waiting for or reimplementing
+the full reservoir. That does not authorize or substitute for Phase 7's own
+governed automation.
+
 Phase 7 will publish a phrase manifest contract. When available:
-- Replace test-only fixture phrase IDs with the Phase 7 phrase reservoir.
+- Replace the closed FEAT #161 phrase set (and any remaining test-only fixture
+  phrase IDs) with the Phase 7 phrase reservoir.
 - Wire the resolver into a runtime transport (requires a separately scored issue).
-- The catalog will populate with approved profiles.
+- Produce and human-review the actual audio clips FEAT #161 left undone, and
+  wire `UzorEngineHero`/`useUzorPerformance` as the first runtime consumer,
+  gated behind the existing muted-by-default sound-preference toggle
+  (requires a separately scored issue — the current AC8 test in
+  `test/vocal-performance-foundation.test.mjs` asserts neither file imports
+  `performance/vocal` yet).
 
 The contracts in this foundation are designed to be consumed unchanged by Phase 7.
 
